@@ -1284,6 +1284,7 @@ jobs:
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TG_CHANNEL_URL: https://t.me/RealS3S
         run: |
           set -euo pipefail
           echo "::group::Telegram Notification"
@@ -1321,6 +1322,7 @@ jobs:
           <b>🏷️ Release Tag:</b> <code>${{ env.NEW_TAG }}</code>
           <b>🔐 Root Solution:</b> ${{ inputs.ksu_type }} (v${KSU_VERS})
           <b>🛡️ SUSFS Version:</b> ${{ env.SUSFS_BASE_VERSION }}
+          <b>🧩 NoMount:</b> Integrated
           <b>⚙️ Optimization:</b> ${{ inputs.optimize_level }} | Clean: ${{ inputs.clean_build }}
           ━━━━━━━━━━━━━━━━━━
           <b>📦 Total Packages:</b> ${ZIP_COUNT} zips
@@ -1329,7 +1331,8 @@ jobs:
           
           ━━━━━━━━━━━━━━━━━━
           👉 <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>📥 GET YOUR KERNEL HERE</b></a>
-          📢 <a href=\"https://t.me/huangdihd_wildkernel\"><b>JOIN TELEGRAM CHANNEL</b></a>"
+          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>BROWSE DEVICE DOWNLOADS</b></a>
+          📢 <a href=\"${TG_CHANNEL_URL}\"><b>JOIN @RealS3S</b></a>"
           
           # Split TG_CHAT_ID by comma or space
           IFS=' ,' read -r -a CHAT_IDS <<< "$TG_CHAT_ID"
