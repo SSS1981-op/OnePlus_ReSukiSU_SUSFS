@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔥 Huangdihd's Fork of Wild Kernels for OnePlus (Oppo/Realme)
+# OnePlus ReSukiSU + SUSFS + NoMount Kernels
 
 [![KernelSU](https://img.shields.io/badge/KernelSU-Supported-green)](https://kernelsu.org/)
 [![ReSukiSU](https://img.shields.io/badge/ReSukiSU-Supported-green)](https://resukisu.github.io/)
@@ -8,6 +8,25 @@
 [![OnePlusOSS Tracking Status](https://img.shields.io/badge/OnePlusOSS--Tracker-active-green)](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS/blob/status-page/README.md)
 
 </div>
+
+---
+
+## Project Credits
+
+<div align="center">
+
+### NOSTALGIC™
+[![Telegram](https://img.shields.io/badge/Telegram-RealS3S-blue?logo=telegram)](https://t.me/RealS3S)
+
+Project maintainer and release publisher
+
+| Upstream contributors |
+|:---:|
+| [magi (@maxsteeel)](https://t.me/maxsteeel) · [荻少 (@huangdihd)](https://t.me/huangdihd) · [fatalcoder524](https://t.me/fatalcoder524) |
+
+</div>
+
+This project builds on their work and on the upstream projects credited below.
 
 ---
 
@@ -132,12 +151,12 @@ If you encounter any issues or need help, feel free to:
 
 ---
 
-## 📱 Connect With Us
+## 📱 Connect
 
 <div align="center">
   
-[![Telegram](https://img.shields.io/badge/Telegram-huangdihd-blue?logo=telegram)](https://t.me/huangdihd)
-[![Telegram Group](https://img.shields.io/badge/Telegram-huangdihd_wildkernel-blue?logo=telegram)](https://t.me/huangdihd_wildkernel)
+[![Telegram](https://img.shields.io/badge/Telegram-RealS3S-blue?logo=telegram)](https://t.me/RealS3S)
+[![Telegram Channel](https://img.shields.io/badge/Telegram-RealS3SKernelLab-blue?logo=telegram)](https://t.me/RealS3SKernelLab)
 
 </div>
 
@@ -150,4 +169,3 @@ Any and all donations are appreciated!
 PayPal: [paypal.me/fatalcoder524](https://paypal.me/fatalcoder524)
 
 DM on Telegram for UPI donations!
-
