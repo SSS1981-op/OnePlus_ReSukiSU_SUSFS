@@ -22,5 +22,5 @@
     <path d="m113 65 9 17 9-10 15 21-16-8-13 12-16-12z" fill="#edf6ff"/>
   </g>
   <text x="96" y="46" fill="#f7f5ff" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="800" letter-spacing="2" text-anchor="middle">R3S</text>
-  <text x="96" y="176" fill="#d7e9ff" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" letter-spacing="1.7" text-anchor="middle">KERNEL LAB</text>
+  <text x="96" y="176" fill="#10203c" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" letter-spacing="1.7" text-anchor="middle">KERNEL LAB</text>
 </svg>
