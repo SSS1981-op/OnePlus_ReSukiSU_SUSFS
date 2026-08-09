@@ -187,6 +187,4 @@ If you encounter any issues or need help, feel free to:
 
 Any and all donations are appreciated!
 
-PayPal: [paypal.me/fatalcoder524](https://paypal.me/fatalcoder524)
-
-DM on Telegram for UPI donations!
+For UPI donations, please contact [@RealS3S on Telegram](https://t.me/RealS3S) for verified payment details.
