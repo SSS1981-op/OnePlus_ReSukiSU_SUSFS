@@ -72,8 +72,8 @@ jobs:
           💻 ${oos_versions}
           📱 ${models}
           ──────────────────────
-          ⬇️ <a href=\"${release_url}\"><b>DOWNLOAD RELEASE</b></a>
-          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>OPEN DEVICE CATALOG</b></a>${channel_line}"
+          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>DOWNLOAD FROM DEVICE CATALOG (RECOMMENDED)</b></a>
+          ⬇️ <a href=\"${release_url}\"><b>DOWNLOAD RELEASE</b></a>${channel_line}"
 
           payload="$(jq -n --arg chat_id "$TG_CHAT_ID" --arg text "$message" '{
             chat_id: $chat_id,
