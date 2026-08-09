@@ -1,5 +1,5 @@
 name: 'Build OnePlus Kernel with KernelSU / ReSukiSU'
-description: 'GitHub Action to build OnePlus kernels with original KernelSU or ReSukiSU, and SUSFS integration, optimized for performance and reliability'
+description: 'GitHub Action to build OnePlus kernels with KernelSU or ReSukiSU, SUSFS, and NoMount integration'
 inputs:
   op_config_json:
     description: 'JSON string containing full device config'
@@ -59,6 +59,9 @@ outputs:
   susfs_version:
     description: 'SUSFS version string'
     value: ${{ steps.save_metadata.outputs.susfs_version }}
+  nomount_commit:
+    description: 'NoMount dev commit integrated into the kernel'
+    value: ${{ steps.save_metadata.outputs.nomount_commit }}
   build_timestamp:
     description: 'Effective kernel build timestamp used in uname -a'
     value: ${{ steps.save_metadata.outputs.build_timestamp }}
@@ -875,6 +878,9 @@ runs:
         
         retry_clone "https://github.com/WildKernels/kernel_patches.git" "main" "1"
         retry_clone "https://github.com/maxsteeel/nomount.git" "dev" "1"
+        NOMOUNT_COMMIT_SHA="$(git -C nomount rev-parse HEAD)"
+        echo "NOMOUNT_COMMIT_SHA=$NOMOUNT_COMMIT_SHA" >> "$GITHUB_ENV"
+        echo "Using NoMount dev commit: $NOMOUNT_COMMIT_SHA"
         if [ "${{ env.OP_SUSFS }}" = true ]; then
           echo "Using SUSFS branch/commit: $SUSFS_BRANCH"
           if ! retry_fetch_archive "https://gitlab.com/simonpunk/susfs4ksu.git" "$SUSFS_BRANCH"; then
@@ -1287,7 +1293,15 @@ runs:
         echo "Available NoMount patches:"
         find "$NOMOUNT_FOLDER/kernel/patches" -maxdepth 1 -type f -name "*.patch" | sort
 
-        NOMOUNT_PATCH="$NOMOUNT_FOLDER/kernel/patches/nomount_${KERNEL_VER}_kernel_integration.patch"
+        case "$KERNEL_VER" in
+          5.10|5.15|6.1|6.6|6.12)
+            NOMOUNT_PATCH="$NOMOUNT_FOLDER/kernel/patches/nomount_${KERNEL_VER}_kernel_integration.patch"
+            ;;
+          *)
+            echo "::error::Unsupported NoMount kernel version: $KERNEL_VER"
+            exit 1
+            ;;
+        esac
 
         echo ""
         echo "Using NoMount patch:"
@@ -1313,6 +1327,8 @@ runs:
         if ! grep -q "^CONFIG_NOMOUNT=y" "$COMMON_KERNEL_FOLDER/arch/arm64/configs/gki_defconfig"; then
           printf '%s\n' 'CONFIG_NOMOUNT=y' >> "$COMMON_KERNEL_FOLDER/arch/arm64/configs/gki_defconfig"
         fi
+        echo "NOMOUNT_PATCH_NAME=$(basename "$NOMOUNT_PATCH")" >> "$GITHUB_ENV"
+        printf '%s\n%s\n%s\n' "NoMount" "${NOMOUNT_COMMIT_SHA:-unknown}" "$(basename "$NOMOUNT_PATCH")" >> "${ARTIFACTS_FOLDER}/${OP_MODEL}_${OP_OS_VERSION}.txt"
 
         echo "Verifying NoMount files..."
         ls -l "$COMMON_KERNEL_FOLDER/fs"/nomount*
@@ -2099,6 +2115,7 @@ runs:
         echo "kernel_version=${{ env.KERNEL_FULL_VER }}" >> "$GITHUB_OUTPUT"
         echo "ksu_version=${KSUVER:-unknown}" >> "$GITHUB_OUTPUT"
         echo "ksu_type=${{ inputs.ksu_type }}" >> "$GITHUB_OUTPUT"
+        echo "nomount_commit=${NOMOUNT_COMMIT_SHA:-unknown}" >> "$GITHUB_OUTPUT"
         echo "build_timestamp=${EFFECTIVE_BUILD_TIMESTAMP:-unknown}" >> "$GITHUB_OUTPUT"
         if [ "${{ env.OP_SUSFS }}" = true ]; then
           echo "susfs_version=${SUSVER:-unknown}" >> "$GITHUB_OUTPUT"
