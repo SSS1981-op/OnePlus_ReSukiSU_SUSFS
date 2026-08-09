@@ -15,7 +15,8 @@
 
 <div align="center">
 
-### NOSTALGIC™
+<img src=".github/assets/nostalgic-banner.svg" alt="NOSTALGIC™" width="560" />
+
 [![Telegram](https://img.shields.io/badge/Telegram-RealS3S-blue?logo=telegram)](https://t.me/RealS3S)
 
 Project maintainer and release publisher
