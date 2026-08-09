@@ -1112,7 +1112,7 @@ jobs:
           EOF
           if [ "$ksu_type" == "ReSukiSU" ]; then
             cat << EOF >> release_notes.md
-          - **ReSukiSU** - Kernel-based Android Root Solution,forked from sukisu
+          - **ReSukiSU** - Kernel-based Android root integration
           EOF
           elif [ "$ksu_type" == "KSU" ]; then
             cat << EOF >> release_notes.md
@@ -1121,6 +1121,7 @@ jobs:
           fi
           cat << EOF >> release_notes.md
           - **SUSFS $SUSFS_BASE_VERSION** - Advanced hiding and security features
+          - **NoMount** - Integrated from the configured MaxSteel NoMount dev revision
           EOF
           
           if [ "${ksu_ver_global:-0}" -lt 12884 ]; then
@@ -1144,20 +1145,19 @@ jobs:
           - **Unicode Fix** - Prevent path traversal and other detections using non-printable Unicode codepoints [Experimental]
           
           ### 🚀 Performance & Networking
-          - **BBRv1** - Improved TCP congestion control
-          - **Wireguard** - Built-in VPN support
-          - **IP Set & IPv6 NAT Support** - Advanced firewall capabilities and IPv6 NAT Support
-          - **TTL Target Support** - Network packet manipulation
-          - **LTO (Link Time Optimization)** - Optimized binary size and performance
-          - **ccache-accelerated builds** - Faster compilation times
-          - **Optimisation Patches** - Memory, I/O, CPU scheduler, network and other general tunings
+          - **BBR with FQ/FQ-CoDel** - TCP congestion-control and queueing support
+          - **IPSet & IPv6 NAT** - IP set matching, IPv6 masquerading, and NAT support
+          - **TTL / hop-limit targets** - IPv4 TTL and IPv6 hop-limit Netfilter targets
+          - **Per-device LTO** - Enabled only where the device configuration supports it
+          - **Performance tuning** - Memory, I/O, CPU-frequency, scheduler, storage, network, and log-spam improvements
           
           ### 🔧 System Features
           - **TMPFS_XATTR** - Extended attributes for tmpfs (Mountify support)
           - **TMPFS_POSIX_ACL** - POSIX ACLs for tmpfs
-          - **HMBIRD SCX** - Scheduler extensions for all SM8750/MT6991 devices
-          - **Droidspaces** - Support Portable Linux containers to run full Linux environments.
-          - **NTSync** - Provide high-performance, low-latency synchronization primitives compatible with the Windows NT kernel API
+          - **Module intercept and overlay mechanism** - Device-specific module overlay support
+          - **Droidspaces** - Portable Linux container prerequisites
+          - **NTSync** - Windows NT synchronization primitives for compatible userspace
+          - **USB DWC3 / OTG** - Dual-role USB, gadget, Type-C, and device-specific PHY support
           
           ---
           
@@ -1180,8 +1180,8 @@ jobs:
           EOF
           fi
           cat << EOF >> release_notes.md
-          ### Recomended Flasher
-          - **Kernel Flasher** (Required for flashing AnyKernel3 zips and backups and OTA)  
+          ### Recommended Flasher
+          - **Kernel Flasher** (compatible with AnyKernel3 ZIPs, backups, and OTA)  
             → [GitHub Release](https://github.com/fatalcoder524/KernelFlasher/releases)
           
           ---
@@ -1204,19 +1204,11 @@ jobs:
           ## 📜 Changelog
           
           ### This Release
-          - Migrated to Action input menu for KSU/ReSukiSU choice.
-          - Updated SUSFS to $SUSFS_BASE_VERSION.
-          - Added HMBIRD support for all SM8750/MT6991 devices.
-          - Improved ccache build system.
-          - Enhanced SUSFS hiding capabilities.
-          - Added IP_SET, IPv6 NAT and TTL support.
-          - Added TMPFS_XATTR and TMPFS_POSIX_ACL support for Mountify.
-          - Added Ptrace leak fix for kernels < 5.16.
-          - Compiler optimizations (${{ inputs.optimize_level }}).
-          - Additional General Optimisations.
-          - Unicode Bypass Fix
-          - Droidspaces Support
-          - NTSync Support
+          - ReSukiSU, SUSFS $SUSFS_BASE_VERSION, and NoMount dev integration.
+          - IPSet, IPv6 NAT, TTL / hop-limit targets, and BBR networking support.
+          - TMPFS XATTR / POSIX ACL, Droidspaces, NTSync, and USB OTG support.
+          - Ptrace compatibility for older kernel families and Unicode path handling fixes.
+          - Per-device compiler and LTO configuration with ${{ inputs.optimize_level }} optimization.
           
           ### Previous Releases
           See [Releases Page](${{ github.server_url }}/${{ github.repository }}/releases)
@@ -1232,7 +1224,7 @@ jobs:
           
           ---
           
-          **⚡ Built with ❤️ by the community**
+          **⚡ RealS3S Kernel Lab**
           
           EOF
           
@@ -1319,24 +1311,25 @@ jobs:
           CHANNEL_LINE=""
           if [ -n "$TG_CHANNEL_URL" ]; then
             CHANNEL_LINE="
-          📢 <a href=\"${TG_CHANNEL_URL}\"><b>JOIN TELEGRAM CHANNEL</b></a>"
+          📢 <a href=\"${TG_CHANNEL_URL}\"><b>FOLLOW REALS3S KERNEL LAB</b></a>"
           fi
           
           # Use pure Bash multi-line string. True newlines are preserved!
-          MSG_TEXT="🚀 <b>OnePlus Kernel Build Successful!</b>
+          MSG_TEXT="🌌 <b>RealS3S Kernel Lab</b>
+          🚀 <b>OnePlus Kernel Release Ready!</b>
           ━━━━━━━━━━━━━━━━━━
           <b>🏷️ Release Tag:</b> <code>${{ env.NEW_TAG }}</code>
           <b>🔐 Root Solution:</b> ${{ inputs.ksu_type }} (v${KSU_VERS})
           <b>🛡️ SUSFS Version:</b> ${{ env.SUSFS_BASE_VERSION }}
-          <b>🧩 NoMount:</b> Integrated
-          <b>⚙️ Optimization:</b> ${{ inputs.optimize_level }} | Clean: ${{ inputs.clean_build }}
+          <b>🚫 NoMount:</b> Integrated
+          <b>⚙️ Build Profile:</b> ${{ inputs.optimize_level }} | Clean build: ${{ inputs.clean_build }}
           ━━━━━━━━━━━━━━━━━━
-          <b>📦 Total Packages:</b> ${ZIP_COUNT} zips
+          <b>📦 Published Packages:</b> ${ZIP_COUNT} ZIPs
           <b>📱 Supported Models:</b> ${MODELS}
-          <b>💻 Supported OS:</b> ${OS_VERS}
+          <b>💻 OxygenOS:</b> ${OS_VERS}
           
           ━━━━━━━━━━━━━━━━━━
-          👉 <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>📥 GET YOUR KERNEL HERE</b></a>
+          👉 <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>DOWNLOAD RELEASE</b></a>
           🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>BROWSE DEVICE DOWNLOADS</b></a>${CHANNEL_LINE}"
           
           # Split TG_CHAT_ID by comma or space
