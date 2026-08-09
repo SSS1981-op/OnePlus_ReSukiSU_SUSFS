@@ -1,0 +1,96 @@
+name: Preview Telegram Release Announcement
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: GitHub release tag to use for the preview
+        required: true
+        type: string
+        default: nomount-dev-20260809
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Send Channel Preview
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+      TG_CHANNEL_URL: ${{ vars.TG_CHANNEL_URL }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - name: Send formatted announcement preview
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "$TG_BOT_TOKEN" ] || [ -z "$TG_CHAT_ID" ]; then
+            echo "::error::TG_BOT_TOKEN and TG_CHAT_ID must be configured before sending a preview."
+            exit 1
+          fi
+
+          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}")"
+          release_url="$(jq -r '.html_url' <<< "$release_json")"
+          zip_count="$(jq '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip"))] | length' <<< "$release_json")"
+          models="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[1]] | unique | join(", ")' <<< "$release_json")"
+          oos_versions="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[2]] | unique | join(", ")' <<< "$release_json")"
+          ksu_version="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[5]] | unique | join(", ")' <<< "$release_json")"
+          susfs_version="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[7] | sub("\\.zip$"; "")] | unique | join(", ")' <<< "$release_json")"
+
+          if [ "$zip_count" -eq 0 ]; then
+            echo "::error::Release '${RELEASE_TAG}' contains no kernel ZIP assets."
+            exit 1
+          fi
+
+          channel_line=""
+          if [ -n "$TG_CHANNEL_URL" ]; then
+            channel_line="
+          📢 <a href=\"${TG_CHANNEL_URL}\"><b>FOLLOW REALS3S KERNEL LAB</b></a>"
+          fi
+
+          message="⚠️ <b>PREVIEW ONLY • FORMATTING TEST</b>
+          ╭──────────────────────╮
+          🌌 <b>REALS3S // KERNEL LAB</b>
+          <i>OnePlus • ReSukiSU • SUSFS • NoMount</i>
+          ╰──────────────────────╯
+          ┈
+          <b>RELEASE CARD PREVIEW</b> ✨
+          🏷️ <code>${RELEASE_TAG}</code>
+          ┈
+          <b>CORE STACK</b>
+          🔐 ReSukiSU <code>v${ksu_version}</code>
+          🛡️ SUSFS <code>${susfs_version}</code>
+          🚫 NoMount <b>integrated</b>
+          ⚙️ Clang O2 • Clean build: false
+          ┈
+          <b>COMPATIBILITY</b>
+          📦 ${zip_count} flashable packages
+          💻 ${oos_versions}
+          📱 ${models}
+          ──────────────────────
+          ⬇️ <a href=\"${release_url}\"><b>DOWNLOAD RELEASE</b></a>
+          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>OPEN DEVICE CATALOG</b></a>${channel_line}"
+
+          payload="$(jq -n --arg chat_id "$TG_CHAT_ID" --arg text "$message" '{
+            chat_id: $chat_id,
+            parse_mode: "HTML",
+            disable_web_page_preview: true,
+            text: $text
+          }')"
+
+          response="$(curl --fail-with-body --silent --show-error \
+            --request POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+            --header "Content-Type: application/json" \
+            --data "$payload")"
+
+          message_id="$(jq -r '.result.message_id // empty' <<< "$response")"
+          if [ -z "$message_id" ]; then
+            echo "::error::Telegram did not return a message ID."
+            exit 1
+          fi
+
+          echo "Preview message sent successfully (message ID: ${message_id})."
