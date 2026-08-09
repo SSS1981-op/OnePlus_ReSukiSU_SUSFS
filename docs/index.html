@@ -60,12 +60,14 @@
       .lede { max-width: 54ch; color: var(--muted); font-size: 1.1rem; line-height: 1.65; }
       .hero-art { position: relative; display: grid; place-items: center; min-height: 16rem; }
       .channel-spotlight {
+        position: absolute; z-index: 2; top: 50%; left: 50%;
         display: grid; place-items: center; gap: .5rem; color: var(--ink); font-weight: 800;
-        text-align: center; text-decoration: none; transition: transform .18s ease;
+        text-align: center; text-decoration: none; transform: translate(-50%, -50%);
+        transition: transform .18s ease;
       }
-      .channel-spotlight:hover, .channel-spotlight:focus-visible { transform: translateY(-4px); outline: none; }
+      .channel-spotlight:hover, .channel-spotlight:focus-visible { transform: translate(-50%, calc(-50% - 4px)); outline: none; }
       .channel-logo {
-        width: clamp(8rem, 17vw, 11rem); height: clamp(8rem, 17vw, 11rem); border: .3rem solid white;
+        width: clamp(10rem, 22vw, 15rem); height: clamp(10rem, 22vw, 15rem); border: .3rem solid white;
         border-radius: 50%; box-shadow: 0 1rem 2rem oklch(0.25 0.06 250 / .2);
       }
       .channel-spotlight small { color: var(--blue); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
@@ -101,6 +103,8 @@
         .topbar { align-items: start; flex-direction: column; }
         .hero { grid-template-columns: 1fr; padding: 2rem; }
         .hero-art { min-height: auto; padding-top: 1rem; }
+        .channel-spotlight { position: static; transform: none; }
+        .channel-spotlight:hover, .channel-spotlight:focus-visible { transform: translateY(-4px); }
         .hero-cube { display: none; }
         .catalog-head { align-items: start; flex-direction: column; }
         .tool-grid { grid-template-columns: 1fr; }
@@ -129,17 +133,17 @@
           </div>
         </div>
         <div class="hero-art">
-          <a class="channel-spotlight" href="https://t.me/RealS3SKernelLab" target="_blank" rel="noopener noreferrer">
-            <img class="channel-logo" src="assets/reals3s-kernel-lab-logo.svg" alt="RealS3S Kernel Lab Telegram channel" />
-            <span>RealS3S Kernel Lab</span>
-            <small>Open Telegram channel</small>
-          </a>
           <svg class="hero-cube" viewBox="0 0 320 260" aria-hidden="true">
             <path fill="var(--cyan)" d="M29 70 159 6l132 66-132 65z"/><path fill="var(--blue)" d="m29 70 130 67v117L29 187z"/><path fill="var(--lime)" d="m291 72-132 65v117l132-67z"/>
             <path fill="white" d="M82 109h52v14H82zm0 29h52v14H82zm103 5 49-24v14l-49 24zm0 29 49-24v14l-49 24z"/>
             <circle cx="250" cy="56" r="26" fill="var(--lime)"/><path fill="var(--ink)" d="m242 56 6 6 12-15" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
+        <a class="channel-spotlight" href="https://t.me/RealS3SKernelLab" target="_blank" rel="noopener noreferrer">
+          <img class="channel-logo" src="assets/reals3s-kernel-lab-logo.svg" alt="RealS3S Kernel Lab Telegram channel" />
+          <span>RealS3S Kernel Lab</span>
+          <small>Open Telegram channel</small>
+        </a>
       </section>
 
       <aside class="notice"><strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Android 15 / kernel 6.6 packages are intentionally absent because those builds did not complete.</aside>
