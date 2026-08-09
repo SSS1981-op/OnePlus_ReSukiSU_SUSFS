@@ -1319,21 +1319,20 @@ jobs:
           🌌 <b>REALS3S // KERNEL LAB</b>
           <i>OnePlus • ReSukiSU • SUSFS • NoMount</i>
           ╰──────────────────────╯
-          
+          ┈
           <b>NEW RELEASE IS READY</b> ✨
           🏷️ <code>${{ env.NEW_TAG }}</code>
-          
+          ┈
           <b>CORE STACK</b>
           🔐 ${{ inputs.ksu_type }} <code>v${KSU_VERS}</code>
           🛡️ SUSFS <code>${{ env.SUSFS_BASE_VERSION }}</code>
           🚫 NoMount <b>integrated</b>
           ⚙️ Clang ${{ inputs.optimize_level }} • Clean build: ${{ inputs.clean_build }}
-          
+          ┈
           <b>COMPATIBILITY</b>
           📦 ${ZIP_COUNT} flashable packages
           💻 ${OS_VERS}
           📱 ${MODELS}
-          
           ──────────────────────
           ⬇️ <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>DOWNLOAD RELEASE</b></a>
           🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>OPEN DEVICE CATALOG</b></a>${CHANNEL_LINE}"
