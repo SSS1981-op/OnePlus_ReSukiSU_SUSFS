@@ -50,16 +50,16 @@ Flashing this kernel will not void your warranty, but there is always a risk of 
 
 ---
 
-## 🔧 Available Kernels
+## 🔧 Device Support
 
 <div align="center">
 
-| Kernel | Repository | Status |
-|--------|------------|--------|
-| 🏗️ **GKI** | [GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS) | ✅ Active |
-| 👑 **Sultan** | [Sultan_KernelSU_SUSFS](https://github.com/WildKernels/Sultan_KernelSU_SUSFS) | ✅ Active |
-| 📱 **OnePlus/Oppo/Realme** | [OnePlus_KernelSU_SUSFS](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS) | ✅ Active |
-| 📱 **Samsung** | [Samsung_KernelSU_SUSFS](https://github.com/WildKernels/Samsung_KernelSU_SUSFS) | ✅ Active |
+| Device family | Availability | Status |
+|---------------|--------------|--------|
+| 📱 **OnePlus** | Kernel packages in this repository | ✅ Available now |
+| 📱 **Oppo / Realme** | Planned | ⏳ Coming soon, based on demand |
+| 🏗️ **GKI / other devices** | Planned | ⏳ Coming soon, based on demand |
+| 📱 **Samsung** | Planned | ⏳ Coming soon, based on demand |
 </div>
 
 ---
