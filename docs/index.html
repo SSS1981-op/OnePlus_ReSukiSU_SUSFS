@@ -63,6 +63,11 @@
       .stats { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.8rem; }
       .stat { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 99rem; background: oklch(1 0 0 / .7); font-weight: 700; font-size: .9rem; }
       .notice { margin: 2rem 0; padding: 1rem 1.2rem; border-left: .35rem solid var(--blue); border-radius: .4rem; background: oklch(0.93 0.045 230); color: oklch(0.31 0.06 250); }
+      .tools { margin: 2rem 0 3.5rem; }
+      .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+      .tool-card { display: grid; gap: .45rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
+      .tool-card:hover, .tool-card:focus-visible { transform: translateY(-3px); border-color: var(--blue); outline: none; }
+      .tool-card small { color: var(--muted); line-height: 1.45; }
       .catalog-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin: 3.5rem 0 1rem; }
       h2 { margin: 0; font-family: Georgia, serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.04em; }
       .filters { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -84,6 +89,7 @@
         .hero { grid-template-columns: 1fr; padding: 2rem; }
         .hero-art { display: none; }
         .catalog-head { align-items: start; flex-direction: column; }
+        .tool-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -119,6 +125,12 @@
 
       <aside class="notice"><strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Android 15 / kernel 6.6 packages are intentionally absent because those builds did not complete.</aside>
 
+      <section class="tools" aria-labelledby="tools-title">
+        <div class="eyebrow">Companion downloads</div>
+        <h2 id="tools-title">Set up NoMount</h2>
+        <div class="tool-grid" id="tools"></div>
+      </section>
+
       <section aria-labelledby="catalog-title">
         <div class="catalog-head">
           <div><div class="eyebrow">Available release assets</div><h2 id="catalog-title">Download catalog</h2></div>
@@ -142,6 +154,23 @@
       const count = document.querySelector("#package-count");
       let packages = [];
       let filter = "all";
+      const companionAssets = [
+        {
+          name: "NoMount-v1.1.1-dev-1dacddf-ReSukiSU.zip",
+          title: "NoMount metamodule",
+          description: "Flash from ReSukiSU Manager. Built from the exact NoMount dev commit integrated in these kernels."
+        },
+        {
+          name: "ReSukiSU_v4.1.0_35055-arm64-v8a-release.apk",
+          title: "ReSukiSU Manager",
+          description: "Official ARM64 regular manager, version 35055."
+        },
+        {
+          name: "ReSukiSU_v4.1.0-spoofed_35055-arm64-v8a-release.apk",
+          title: "ReSukiSU Spoofed Manager",
+          description: "Official ARM64 spoofed manager, version 35055."
+        }
+      ];
 
       function parseAsset(asset) {
         const match = asset.name.match(/^AK3_(.+)_(OOS(?:14|15|16))_(android\d+-[\d.]+)_ReSukiSU_(\d+)_SuSFS_(.+)\.zip$/);
@@ -183,6 +212,16 @@
           const release = releases.find(item => !item.prerelease && item.tag_name.startsWith("nomount-"));
           if (!release) throw new Error("Packages are still being published");
           packages = release.assets.map(parseAsset).filter(Boolean);
+          const tools = document.querySelector("#tools");
+          const byName = new Map(release.assets.map(asset => [asset.name, asset]));
+          tools.replaceChildren(...companionAssets.map(tool => {
+            const asset = byName.get(tool.name);
+            const card = document.createElement(asset ? "a" : "div");
+            card.className = "tool-card";
+            if (asset) card.href = asset.browser_download_url;
+            card.innerHTML = `<b>${tool.title}</b><small>${tool.description}</small><span class="download">${asset ? "Download &rarr;" : "Publishing soon"}</span>`;
+            return card;
+          }));
           count.textContent = `${packages.length} published packages`;
           render();
         })
