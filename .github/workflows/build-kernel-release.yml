@@ -748,6 +748,7 @@ jobs:
             if [ "${{ matrix.susfs }}" = true ]; then
               echo "  - SUSFS: ${{ steps.build.outputs.susfs_version }}"
             fi
+            echo "  - NoMount dev: ${{ steps.build.outputs.nomount_commit }}"
             echo "  - Build time: ${{ steps.build.outputs.build_time }}s"
             
             if [ "${{ inputs.clean_build }}" != "true" ]; then
@@ -803,6 +804,7 @@ jobs:
           | **SUSFS** | ${{ steps.build.outputs.susfs_version }} |
           EOF
             fi
+          echo "| **NoMount dev** | \`${{ steps.build.outputs.nomount_commit }}\` |" >> "$GITHUB_STEP_SUMMARY"
           cat >> $GITHUB_STEP_SUMMARY << EOF
           | **Build Time** | ${{ steps.build.outputs.build_time }}s |
           EOF
