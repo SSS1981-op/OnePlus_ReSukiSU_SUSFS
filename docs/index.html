@@ -41,9 +41,7 @@
         gap: 1rem; padding: 1.5rem 0;
       }
       .brand { display: flex; align-items: center; gap: .7rem; font-weight: 800; text-decoration: none; }
-      .brand-marks { display: flex; align-items: center; gap: .3rem; }
       .mark { width: 2.25rem; height: 2.25rem; }
-      .channel-mark { width: 2.5rem; height: 2.5rem; }
       .source { color: var(--muted); font-size: .9rem; }
       .hero {
         position: relative; overflow: hidden; isolation: isolate;
@@ -60,8 +58,21 @@
       .eyebrow { color: var(--blue); font-weight: 800; letter-spacing: .09em; text-transform: uppercase; font-size: .78rem; }
       h1 { max-width: 12ch; margin: .65rem 0 1rem; font-family: Georgia, serif; font-size: clamp(2.7rem, 6vw, 5rem); letter-spacing: -.055em; line-height: .95; }
       .lede { max-width: 54ch; color: var(--muted); font-size: 1.1rem; line-height: 1.65; }
-      .hero-art { display: grid; place-items: center; min-height: 16rem; }
-      .hero-art svg { width: min(100%, 20rem); filter: drop-shadow(0 1rem 1.2rem oklch(0.25 0.06 250 / .15)); }
+      .hero-art { position: relative; display: grid; place-items: center; min-height: 16rem; }
+      .channel-spotlight {
+        display: grid; place-items: center; gap: .5rem; color: var(--ink); font-weight: 800;
+        text-align: center; text-decoration: none; transition: transform .18s ease;
+      }
+      .channel-spotlight:hover, .channel-spotlight:focus-visible { transform: translateY(-4px); outline: none; }
+      .channel-logo {
+        width: clamp(8rem, 17vw, 11rem); height: clamp(8rem, 17vw, 11rem); border: .3rem solid white;
+        border-radius: 50%; box-shadow: 0 1rem 2rem oklch(0.25 0.06 250 / .2);
+      }
+      .channel-spotlight small { color: var(--blue); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+      .hero-cube {
+        position: absolute; right: -1.5rem; bottom: -2rem; width: min(42%, 9rem);
+        opacity: .72; filter: drop-shadow(0 .75rem .9rem oklch(0.25 0.06 250 / .13));
+      }
       .stats { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.8rem; }
       .stat { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 99rem; background: oklch(1 0 0 / .7); font-weight: 700; font-size: .9rem; }
       .notice { margin: 2rem 0; padding: 1rem 1.2rem; border-left: .35rem solid var(--blue); border-radius: .4rem; background: oklch(0.93 0.045 230); color: oklch(0.31 0.06 250); }
@@ -89,7 +100,8 @@
       @media (max-width: 720px) {
         .topbar { align-items: start; flex-direction: column; }
         .hero { grid-template-columns: 1fr; padding: 2rem; }
-        .hero-art { display: none; }
+        .hero-art { min-height: auto; padding-top: 1rem; }
+        .hero-cube { display: none; }
         .catalog-head { align-items: start; flex-direction: column; }
         .tool-grid { grid-template-columns: 1fr; }
       }
@@ -99,10 +111,7 @@
     <main class="wrap">
       <header class="topbar">
         <a class="brand" href="#">
-          <span class="brand-marks" aria-hidden="true">
-            <svg class="mark" viewBox="0 0 48 48"><path fill="var(--blue)" d="M24 2 43 13v22L24 46 5 35V13z"/><path fill="white" d="M14 16h20v5H14zm0 11h13v5H14z"/></svg>
-            <img class="mark channel-mark" src="assets/reals3s-kernel-lab-logo.svg" alt="" />
-          </span>
+          <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path fill="var(--blue)" d="M24 2 43 13v22L24 46 5 35V13z"/><path fill="white" d="M14 16h20v5H14zm0 11h13v5H14z"/></svg>
           RealS3S Kernel Lab
         </a>
         <a class="source" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">Source repository</a>
@@ -119,8 +128,13 @@
             <span class="stat">Device-specific only</span>
           </div>
         </div>
-        <div class="hero-art" aria-hidden="true">
-          <svg viewBox="0 0 320 260">
+        <div class="hero-art">
+          <a class="channel-spotlight" href="https://t.me/RealS3SKernelLab" target="_blank" rel="noopener noreferrer">
+            <img class="channel-logo" src="assets/reals3s-kernel-lab-logo.svg" alt="RealS3S Kernel Lab Telegram channel" />
+            <span>RealS3S Kernel Lab</span>
+            <small>Open Telegram channel</small>
+          </a>
+          <svg class="hero-cube" viewBox="0 0 320 260" aria-hidden="true">
             <path fill="var(--cyan)" d="M29 70 159 6l132 66-132 65z"/><path fill="var(--blue)" d="m29 70 130 67v117L29 187z"/><path fill="var(--lime)" d="m291 72-132 65v117l132-67z"/>
             <path fill="white" d="M82 109h52v14H82zm0 29h52v14H82zm103 5 49-24v14l-49 24zm0 29 49-24v14l-49 24z"/>
             <circle cx="250" cy="56" r="26" fill="var(--lime)"/><path fill="var(--ink)" d="m242 56 6 6 12-15" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
