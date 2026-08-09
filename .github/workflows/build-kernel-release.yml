@@ -1181,7 +1181,7 @@ jobs:
           fi
           cat << EOF >> release_notes.md
           ### Recommended Flasher
-          - **Kernel Flasher** (compatible with AnyKernel3 ZIPs, backups, and OTA)  
+          - **Kernel Flasher** (compatible with AnyKernel3 ZIPs, backups, and OTA)
             → [GitHub Release](https://github.com/fatalcoder524/KernelFlasher/releases)
           
           ---
