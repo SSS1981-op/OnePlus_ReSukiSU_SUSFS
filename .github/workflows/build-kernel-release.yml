@@ -45,7 +45,7 @@ on:
       ksu_branch_or_hash:
         description: 'KSU branch or commit hash'
         type: string
-        default: 'main'
+        default: 'dev'
       optimize_level:
         description: "Compiler optimization level"
         required: true
