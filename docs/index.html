@@ -55,6 +55,9 @@
         right: -7rem; bottom: -9rem; border: 3.4rem solid oklch(0.65 0.18 250 / .15);
         border-radius: 47% 53% 62% 38% / 35% 44% 56% 65%; transform: rotate(22deg);
       }
+      @media (min-width: 721px) {
+        .hero::after { display: none; }
+      }
       .eyebrow { color: var(--blue); font-weight: 800; letter-spacing: .09em; text-transform: uppercase; font-size: .78rem; }
       h1 { max-width: 12ch; margin: .65rem 0 1rem; font-family: Georgia, serif; font-size: clamp(2.7rem, 6vw, 5rem); letter-spacing: -.055em; line-height: .95; }
       .lede { max-width: 54ch; color: var(--muted); font-size: 1.1rem; line-height: 1.65; }
