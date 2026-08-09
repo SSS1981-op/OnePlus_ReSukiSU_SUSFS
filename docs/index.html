@@ -41,7 +41,9 @@
         gap: 1rem; padding: 1.5rem 0;
       }
       .brand { display: flex; align-items: center; gap: .7rem; font-weight: 800; text-decoration: none; }
+      .brand-marks { display: flex; align-items: center; gap: .3rem; }
       .mark { width: 2.25rem; height: 2.25rem; }
+      .channel-mark { width: 2.5rem; height: 2.5rem; }
       .source { color: var(--muted); font-size: .9rem; }
       .hero {
         position: relative; overflow: hidden; isolation: isolate;
@@ -97,7 +99,10 @@
     <main class="wrap">
       <header class="topbar">
         <a class="brand" href="#">
-          <img class="mark" src="assets/reals3s-kernel-lab-logo.svg" alt="" aria-hidden="true" />
+          <span class="brand-marks" aria-hidden="true">
+            <svg class="mark" viewBox="0 0 48 48"><path fill="var(--blue)" d="M24 2 43 13v22L24 46 5 35V13z"/><path fill="white" d="M14 16h20v5H14zm0 11h13v5H14z"/></svg>
+            <img class="mark channel-mark" src="assets/reals3s-kernel-lab-logo.svg" alt="" />
+          </span>
           RealS3S Kernel Lab
         </a>
         <a class="source" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">Source repository</a>
