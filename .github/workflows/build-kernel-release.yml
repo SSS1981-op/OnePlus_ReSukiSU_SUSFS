@@ -1315,22 +1315,27 @@ jobs:
           fi
           
           # Use pure Bash multi-line string. True newlines are preserved!
-          MSG_TEXT="🌌 <b>RealS3S Kernel Lab</b>
-          🚀 <b>OnePlus Kernel Release Ready!</b>
-          ━━━━━━━━━━━━━━━━━━
-          <b>🏷️ Release Tag:</b> <code>${{ env.NEW_TAG }}</code>
-          <b>🔐 Root Solution:</b> ${{ inputs.ksu_type }} (v${KSU_VERS})
-          <b>🛡️ SUSFS Version:</b> ${{ env.SUSFS_BASE_VERSION }}
-          <b>🚫 NoMount:</b> Integrated
-          <b>⚙️ Build Profile:</b> ${{ inputs.optimize_level }} | Clean build: ${{ inputs.clean_build }}
-          ━━━━━━━━━━━━━━━━━━
-          <b>📦 Published Packages:</b> ${ZIP_COUNT} ZIPs
-          <b>📱 Supported Models:</b> ${MODELS}
-          <b>💻 OxygenOS:</b> ${OS_VERS}
-          
-          ━━━━━━━━━━━━━━━━━━
-          👉 <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>DOWNLOAD RELEASE</b></a>
-          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>BROWSE DEVICE DOWNLOADS</b></a>${CHANNEL_LINE}"
+          MSG_TEXT="╭──────────────────────╮
+          🌌 <b>REALS3S // KERNEL LAB</b>
+          <i>OnePlus • ReSukiSU • SUSFS • NoMount</i>
+          ╰──────────────────────╯
+          ┈
+          <b>NEW RELEASE IS READY</b> ✨
+          🏷️ <code>${{ env.NEW_TAG }}</code>
+          ┈
+          <b>CORE STACK</b>
+          🔐 ${{ inputs.ksu_type }} <code>v${KSU_VERS}</code>
+          🛡️ SUSFS <code>${{ env.SUSFS_BASE_VERSION }}</code>
+          🚫 NoMount <b>integrated</b>
+          ⚙️ Clang ${{ inputs.optimize_level }} • Clean build: ${{ inputs.clean_build }}
+          ┈
+          <b>COMPATIBILITY</b>
+          📦 ${ZIP_COUNT} flashable packages
+          💻 ${OS_VERS}
+          📱 ${MODELS}
+          ──────────────────────
+          ⬇️ <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>DOWNLOAD RELEASE</b></a>
+          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>OPEN DEVICE CATALOG</b></a>${CHANNEL_LINE}"
           
           # Split TG_CHAT_ID by comma or space
           IFS=' ,' read -r -a CHAT_IDS <<< "$TG_CHAT_ID"
