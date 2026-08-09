@@ -85,21 +85,41 @@ Flashing this kernel will not void your warranty, but there is always a risk of 
 
 ## ✨ Features
 
-- 🔐 **ReSukiSU**: Kernel-based Android Root Solution,forked from sukisu
-- 🥷 **SUSFS**: An addon root hiding kernel patches and userspace module for KernelSU
-- 🛡️ **BBG**: LSM-based Baseband Guard security to protect critical device partitions. abl/efisp can be added to whitelist for efisp exploit devices.
-- 🛠️ **HMBIRD SCX**: Scheduler extensions for SM8750/MT6991 devices
-- 🖧 **BBRv1**: Improved TCP congestion control
-- 🖧 **BBRv3**: Improved TCP congestion control
-- 🚦 **CAKE and PIE qdisc Support**: Better Net Schedulers
-- ✅ **LTO**: Link Time Optimisation enabled
-- 🚀 **Optimisation patches**: Memory, I/O, CPU scheduler, network and other general tunings
-- 🌐 **TTL Target Support**: Network packet manipulation
-- 🧱 **IP Set & IPv6 NAT Support**: Advanced firewall capabilities and IPv6 NAT Support
-- ⚡️ **TMPFS XATTR / POSIX ACL**: Extended TMPFS support for meta modules and Mountify
-- </> **Unicode Bypass Fix**: Prevent path traversal and other detections using non-printable Unicode codepoints [Experimental]
-- 🖥️ **Droidspaces Support**: Support Portable Linux containers to run full Linux environments.
-- 🔃 **NTSync**: Provide high-performance, low-latency synchronization primitives compatible with the Windows NT kernel API
+> **Release build profile:** the workflow defaults to Clang **O2** optimization. A **clean build** only disables the CI compiler cache; it is an optional build-runner setting, not a kernel feature or a quality indicator.
+
+### Root, hiding, and module capabilities
+
+- 🔐 **ReSukiSU**: Kernel-based Android root integration.
+- 🥷 **SUSFS**: Root-hiding filesystem patches and userspace support.
+- 🚫 **NoMount**: MaxSteel NoMount kernel integration, paired with the matching flashable metamodule.
+- 🧩 **Module intercept and overlay mechanism**: Supports the supplied device-specific module overlay components.
+- 🛡️ **Baseband Guard (BBG)**: LSM-based protection for critical baseband-related partitions.
+- ⚡ **TMPFS XATTR and POSIX ACL**: Extended TMPFS support for metamodules and compatible tools.
+
+### Networking and container support
+
+- 🖧 **BBR with FQ/FQ-CoDel**: Modern TCP congestion-control and queueing support.
+- 🌐 **TTL / hop-limit targets**: IPv4 TTL and IPv6 hop-limit Netfilter targets.
+- 🧱 **IPSet and IPv6 NAT**: IPSet match/set support plus IPv6 masquerading and NAT.
+- 🖥️ **Droidspaces / LXC prerequisites**: IPC, PID, user namespace, POSIX message queue, and related container support.
+- 🔌 **USB DWC3 / OTG**: Dual-role USB gadget and Type-C configuration, with Qualcomm or MediaTek PHY support selected per device.
+
+### Compatibility and platform enhancements
+
+- 🔃 **NTSync**: Windows NT synchronization primitives for compatible userspace.
+- </> **Unicode bypass fix**: Protection against non-printable Unicode path handling issues.
+- 🧰 **GKI ptrace compatibility**: Applied where required by older kernel families.
+- 🦀 **Rust Binder support**: Included in the Android 16 / kernel 6.12 packages.
+- 📄 **config.gz compatibility layer**: Keeps selected added capabilities visible to configuration readers.
+
+### Performance, storage, and responsiveness tuning
+
+- 🚀 **Clang O2 by default**: O3 remains an explicit workflow option; it is never silently selected.
+- 🔗 **Per-device LTO configuration**: Thin LTO is enabled where the device configuration supports it; affected Android 16 packages correctly use LTO disabled.
+- 🧠 **Memory tuning**: Optimized memory operations, `memcmp`, `clear_page` where compatible, memory prefetching, file-structure alignment, and lower cache pressure.
+- ⚙️ **Scheduler and CPU-frequency tuning**: Wakeup-time reduction, CPU scan-order adjustment, minimum-frequency handling, reduced idle wake attempts, and cpufreq branch optimization where compatible.
+- 💾 **Storage and I/O tuning**: F2FS congestion and fsync tuning, a longer ext4 commit interval, and lower GC-thread sleep time.
+- 📡 **Network and system responsiveness**: TCP no-delay behavior, larger socket packet limits, fewer PCI PME wakeups, timeout-wakelock handling, and reduced IRQ/system log spam.
 
 ---
 
