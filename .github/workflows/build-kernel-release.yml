@@ -1284,7 +1284,7 @@ jobs:
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          TG_CHANNEL_URL: https://t.me/RealS3S
+          TG_CHANNEL_URL: ${{ vars.TG_CHANNEL_URL }}
         run: |
           set -euo pipefail
           echo "::group::Telegram Notification"
@@ -1315,6 +1315,12 @@ jobs:
           fi
           
           echo "Found $ZIP_COUNT packages for models: $MODELS, KSU Ver: $KSU_VERS"
+
+          CHANNEL_LINE=""
+          if [ -n "$TG_CHANNEL_URL" ]; then
+            CHANNEL_LINE="
+          📢 <a href=\"${TG_CHANNEL_URL}\"><b>JOIN TELEGRAM CHANNEL</b></a>"
+          fi
           
           # Use pure Bash multi-line string. True newlines are preserved!
           MSG_TEXT="🚀 <b>OnePlus Kernel Build Successful!</b>
@@ -1331,8 +1337,7 @@ jobs:
           
           ━━━━━━━━━━━━━━━━━━
           👉 <a href=\"${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}\"><b>📥 GET YOUR KERNEL HERE</b></a>
-          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>BROWSE DEVICE DOWNLOADS</b></a>
-          📢 <a href=\"${TG_CHANNEL_URL}\"><b>JOIN @RealS3S</b></a>"
+          🌐 <a href=\"https://sss1981-op.github.io/OnePlus_ReSukiSU_SUSFS/\"><b>BROWSE DEVICE DOWNLOADS</b></a>${CHANNEL_LINE}"
           
           # Split TG_CHAT_ID by comma or space
           IFS=' ,' read -r -a CHAT_IDS <<< "$TG_CHAT_ID"
