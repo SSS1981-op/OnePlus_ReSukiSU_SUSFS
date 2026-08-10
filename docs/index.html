@@ -83,7 +83,7 @@
       .stat { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 99rem; background: oklch(1 0 0 / .7); font-weight: 700; font-size: .9rem; }
       .notice { margin: 2rem 0; padding: 1rem 1.2rem; border-left: .35rem solid var(--blue); border-radius: .4rem; background: oklch(0.93 0.045 230); color: oklch(0.31 0.06 250); }
       .tools { margin: 2rem 0 3.5rem; }
-      .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+      .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem; margin-top: 1rem; }
       .tool-card { display: grid; gap: .45rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
       .tool-card:hover, .tool-card:focus-visible { transform: translateY(-3px); border-color: var(--blue); outline: none; }
       .tool-card small { color: var(--muted); line-height: 1.45; }
@@ -184,7 +184,7 @@
       const status = document.querySelector("#status");
       const groups = document.querySelector("#groups");
       const count = document.querySelector("#package-count");
-      let packages = [];
+      let catalogAssets = [];
       let filter = "all";
       let rootFilter = "all";
       const rootLabels = {
@@ -196,63 +196,80 @@
         {
           name: "NoMount-v1.1.1-dev-1dacddf-ReSukiSU.zip",
           title: "NoMount metamodule",
-          description: "Flash from KernelSU Next Manager. Built from the exact NoMount dev commit integrated in these kernels."
-        },
-        {
-          name: "KernelSU_Next_v3.3.0_33214-release.apk",
-          title: "KernelSU Next Manager",
-          description: "Official ARM64 regular manager, version 3.3.0."
-        },
-        {
-          name: "KernelSU_Next_v3.3.0-spoofed_33214-release.apk",
-          title: "KernelSU Next Spoofed Manager",
-          description: "Official ARM64 spoofed manager, version 3.3.0."
+          description: "Flash from a compatible root manager. Built from the exact NoMount dev commit integrated in these kernels."
         }
       ];
 
-      function parseAsset(asset) {
+      function parseKernelAsset(asset) {
         const match = asset.name.match(/^AK3_(.+)_(OOS(?:14|15|16))_(android\d+-[\d.]+)_(KSUN|ReSukiSU|KSU)_(\d+)_SuSFS_(.+)\.zip$/);
-        return match && { ...asset, model: match[1], oos: match[2], kernel: match[3], root: match[4], susfs: match[6] };
+        return match && { ...asset, type: "kernel", model: match[1], oos: match[2], kernel: match[3], root: match[4], susfs: match[6] };
+      }
+      function parseManagerAsset(asset) {
+        let root;
+        if (/^KernelSU_Next_.*\.apk$/.test(asset.name)) root = "KSUN";
+        else if (/^ReSukiSU_.*\.apk$/.test(asset.name)) root = "ReSukiSU";
+        else if (/^KernelSU_(?!Next_).+\.apk$/.test(asset.name)) root = "KSU";
+        return root && { ...asset, type: "manager", root };
+      }
+      function parseCatalogAsset(asset) {
+        return parseKernelAsset(asset) || parseManagerAsset(asset);
       }
       function render() {
-        const visible = packages.filter(item =>
+        const kernels = catalogAssets.filter(item =>
+          item.type === "kernel" &&
           (filter === "all" || item.oos === filter) &&
           (rootFilter === "all" || item.root === rootFilter)
         );
-        const byRelease = visible.reduce((result, item) => {
-          const key = `${item.release.id}:${item.root}:${item.oos}`;
+        const managers = catalogAssets.filter(item =>
+          item.type === "manager" &&
+          (rootFilter === "all" || item.root === rootFilter)
+        );
+        const byRelease = kernels.reduce((result, item) => {
+          const key = `${item.release.id}:${item.root}`;
           if (!result[key]) {
             result[key] = {
               release: item.release,
               root: item.root,
-              oos: item.oos,
-              assets: []
+              kernels: [],
+              managers: managers.filter(manager =>
+                manager.release.id === item.release.id && manager.root === item.root
+              )
             };
           }
-          result[key].assets.push(item);
+          result[key].kernels.push(item);
           return result;
         }, {});
         groups.replaceChildren(...Object.values(byRelease).sort((left, right) =>
           new Date(right.release.published_at) - new Date(left.release.published_at)
-        ).map(({ release, root, oos, assets }) => {
+        ).map(({ release, root, kernels, managers }) => {
           const section = document.createElement("section");
           section.className = "group";
-          section.innerHTML = `<div class="group-title"><span>${release.name} · ${rootLabels[root]} · ${oos.replace("OOS", "OxygenOS ")}</span><span>${assets.length} packages</span></div>`;
+          const managerCount = `${managers.length} manager${managers.length === 1 ? "" : "s"}`;
+          const kernelCount = `${kernels.length} kernel${kernels.length === 1 ? "" : "s"}`;
+          section.innerHTML = `<div class="group-title"><span>${rootLabels[root]} · ${release.name}</span><span>${managerCount} · ${kernelCount}</span></div>`;
           const grid = document.createElement("div");
           grid.className = "assets";
-          assets.sort((a, b) => a.model.localeCompare(b.model)).forEach(asset => {
+          managers.sort((a, b) => a.name.localeCompare(b.name)).forEach(asset => {
             const link = document.createElement("a");
             link.className = "asset";
             link.href = asset.browser_download_url;
-            link.innerHTML = `<b>${asset.model}</b><span>${asset.kernel}</span><span>${rootLabels[asset.root]} + SUSFS ${asset.susfs}</span><span class="download">Download ZIP &rarr;</span>`;
+            const variant = asset.name.includes("spoofed") ? "Spoofed manager" : "Manager";
+            link.innerHTML = `<b>${rootLabels[asset.root]} ${variant}</b><span>${asset.name}</span><span class="download">Download APK &rarr;</span>`;
+            grid.append(link);
+          });
+          kernels.sort((a, b) => a.model.localeCompare(b.model) || a.oos.localeCompare(b.oos)).forEach(asset => {
+            const link = document.createElement("a");
+            link.className = "asset";
+            link.href = asset.browser_download_url;
+            link.innerHTML = `<b>${asset.model}</b><span>${asset.oos.replace("OOS", "OxygenOS ")} · ${asset.kernel}</span><span>${rootLabels[asset.root]} + SUSFS ${asset.susfs}</span><span class="download">Download ZIP &rarr;</span>`;
             grid.append(link);
           });
           section.append(grid);
           return section;
         }));
-        const releaseCount = new Set(visible.map(item => item.release.id)).size;
-        status.textContent = visible.length
-          ? `${visible.length} compatible package${visible.length === 1 ? "" : "s"} from ${releaseCount} published release${releaseCount === 1 ? "" : "s"} shown.`
+        const releaseCount = new Set(kernels.map(item => item.release.id)).size;
+        status.textContent = kernels.length
+          ? `${kernels.length} compatible kernel${kernels.length === 1 ? "" : "s"} from ${releaseCount} published release${releaseCount === 1 ? "" : "s"} shown.`
           : "No packages match this filter.";
       }
       document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
@@ -269,15 +286,12 @@
         .then(response => response.ok ? response.json() : Promise.reject(new Error("Release API unavailable")))
         .then(releases => {
           const publishedReleases = releases.filter(item => !item.draft && !item.prerelease);
-          packages = publishedReleases.flatMap(release =>
-            release.assets.map(parseAsset).filter(Boolean).map(asset => ({ ...asset, release }))
+          catalogAssets = publishedReleases.flatMap(release =>
+            release.assets.map(parseCatalogAsset).filter(Boolean).map(asset => ({ ...asset, release }))
           );
-          if (!packages.length) throw new Error("Packages are still being published");
+          if (!catalogAssets.some(asset => asset.type === "kernel")) throw new Error("Packages are still being published");
           const tools = document.querySelector("#tools");
-          const ksunRelease = publishedReleases.find(release =>
-            release.assets.some(asset => parseAsset(asset)?.root === "KSUN")
-          );
-          const byName = new Map((ksunRelease?.assets ?? []).map(asset => [asset.name, asset]));
+          const byName = new Map(publishedReleases.flatMap(release => release.assets).map(asset => [asset.name, asset]));
           tools.replaceChildren(...companionAssets.map(tool => {
             const asset = byName.get(tool.name);
             const card = document.createElement(asset ? "a" : "div");
@@ -286,8 +300,10 @@
             card.innerHTML = `<b>${tool.title}</b><small>${tool.description}</small><span class="download">${asset ? "Download &rarr;" : "Publishing soon"}</span>`;
             return card;
           }));
-          const releaseCount = new Set(packages.map(item => item.release.id)).size;
-          count.textContent = `${packages.length} packages from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
+          const kernels = catalogAssets.filter(asset => asset.type === "kernel");
+          const managers = catalogAssets.filter(asset => asset.type === "manager");
+          const releaseCount = new Set(kernels.map(item => item.release.id)).size;
+          count.textContent = `${kernels.length} kernels and ${managers.length} managers from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
           render();
         })
         .catch(error => {
