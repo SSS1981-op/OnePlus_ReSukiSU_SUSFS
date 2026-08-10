@@ -128,7 +128,7 @@
         <div>
           <div class="eyebrow">OnePlus kernel packages</div>
           <h1 id="page-title">Pick the kernel built for your device.</h1>
-          <p class="lede">Official ReSukiSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
+          <p class="lede">Official KernelSU Next + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
           <div class="stats">
             <span class="stat" id="package-count">Loading packages</span>
             <span class="stat">NoMount dev integrated</span>
@@ -149,7 +149,7 @@
         </div>
       </section>
 
-      <aside class="notice"><strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Android 15 / kernel 6.6 packages are intentionally absent because those builds did not complete.</aside>
+      <aside class="notice"><strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Always match the model, OxygenOS generation, and kernel version shown on the card.</aside>
 
       <section class="tools" aria-labelledby="tools-title">
         <div class="eyebrow">Companion downloads</div>
@@ -184,23 +184,23 @@
         {
           name: "NoMount-v1.1.1-dev-1dacddf-ReSukiSU.zip",
           title: "NoMount metamodule",
-          description: "Flash from ReSukiSU Manager. Built from the exact NoMount dev commit integrated in these kernels."
+          description: "Flash from KernelSU Next Manager. Built from the exact NoMount dev commit integrated in these kernels."
         },
         {
-          name: "ReSukiSU_v4.1.0_35055-arm64-v8a-release.apk",
-          title: "ReSukiSU Manager",
-          description: "Official ARM64 regular manager, version 35055."
+          name: "KernelSU_Next_v3.3.0_33214-release.apk",
+          title: "KernelSU Next Manager",
+          description: "Official ARM64 regular manager, version 3.3.0."
         },
         {
-          name: "ReSukiSU_v4.1.0-spoofed_35055-arm64-v8a-release.apk",
-          title: "ReSukiSU Spoofed Manager",
-          description: "Official ARM64 spoofed manager, version 35055."
+          name: "KernelSU_Next_v3.3.0-spoofed_33214-release.apk",
+          title: "KernelSU Next Spoofed Manager",
+          description: "Official ARM64 spoofed manager, version 3.3.0."
         }
       ];
 
       function parseAsset(asset) {
-        const match = asset.name.match(/^AK3_(.+)_(OOS(?:14|15|16))_(android\d+-[\d.]+)_ReSukiSU_(\d+)_SuSFS_(.+)\.zip$/);
-        return match && { ...asset, model: match[1], oos: match[2], kernel: match[3], susfs: match[5] };
+        const match = asset.name.match(/^AK3_(.+)_(OOS(?:14|15|16))_(android\d+-[\d.]+)_(KSUN|ReSukiSU|KSU)_(\d+)_SuSFS_(.+)\.zip$/);
+        return match && { ...asset, model: match[1], oos: match[2], kernel: match[3], root: match[4], susfs: match[6] };
       }
       function render() {
         const visible = packages.filter(item => filter === "all" || item.oos === filter);
@@ -219,7 +219,8 @@
             const link = document.createElement("a");
             link.className = "asset";
             link.href = asset.browser_download_url;
-            link.innerHTML = `<b>${asset.model}</b><span>${asset.kernel}</span><span>ReSukiSU + SUSFS ${asset.susfs}</span><span class="download">Download ZIP &rarr;</span>`;
+            const rootName = asset.root === "KSUN" ? "KernelSU Next" : asset.root;
+            link.innerHTML = `<b>${asset.model}</b><span>${asset.kernel}</span><span>${rootName} + SUSFS ${asset.susfs}</span><span class="download">Download ZIP &rarr;</span>`;
             grid.append(link);
           });
           section.append(grid);
@@ -235,7 +236,7 @@
       fetch(`https://api.github.com/repos/${repository}/releases?per_page=100`)
         .then(response => response.ok ? response.json() : Promise.reject(new Error("Release API unavailable")))
         .then(releases => {
-          const release = releases.find(item => !item.prerelease && item.tag_name.startsWith("nomount-"));
+          const release = releases.find(item => !item.prerelease && item.assets.some(asset => asset.name.includes("_KSUN_")));
           if (!release) throw new Error("Packages are still being published");
           packages = release.assets.map(parseAsset).filter(Boolean);
           const tools = document.querySelector("#tools");

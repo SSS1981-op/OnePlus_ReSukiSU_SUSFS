@@ -1,5 +1,5 @@
-name: 'Build OnePlus Kernel with KernelSU / ReSukiSU'
-description: 'GitHub Action to build OnePlus kernels with KernelSU or ReSukiSU, SUSFS, and NoMount integration'
+name: 'Build OnePlus Kernel with KernelSU Next / KernelSU / ReSukiSU'
+description: 'GitHub Action to build OnePlus kernels with KernelSU Next, KernelSU, or ReSukiSU plus SUSFS and NoMount integration'
 inputs:
   op_config_json:
     description: 'JSON string containing full device config'
@@ -12,6 +12,7 @@ inputs:
     options:
       - KSU
       - ReSukiSU
+      - KSUN
   ksu_branch_or_hash:
     description: 'KSU branch or commit hash (empty = auto-detect by ksu_type)'
     required: false
@@ -346,6 +347,7 @@ runs:
         SUSFS_DIR="$GITHUB_WORKSPACE/susfs4ksu"
         NOMOUNT_DIR="$GITHUB_WORKSPACE/nomount"
         KSU_DIR="$KERNEL_PLATFORM_DIR/KernelSU"
+        KSUN_DIR="$KERNEL_PLATFORM_DIR/KernelSU-Next"
         mkdir -p "$ARTIFACTS_DIR"
         mkdir -p "$DEBUG_ARTIFACTS_DIR"
         
@@ -361,6 +363,7 @@ runs:
         echo "SUSFS_FOLDER=$SUSFS_DIR" >> "$GITHUB_ENV"
         echo "NOMOUNT_FOLDER=$NOMOUNT_DIR" >> "$GITHUB_ENV"
         echo "KSU_FOLDER=$KSU_DIR" >> "$GITHUB_ENV"
+        echo "KSUN_FOLDER=$KSUN_DIR" >> "$GITHUB_ENV"
         
         DEBUG_ZIP_NAME="debug_${OP_MODEL}_${OP_OS_VERSION}.zip"
         echo "DEBUG_ZIP_NAME=$DEBUG_ZIP_NAME" >> "$GITHUB_ENV"
@@ -877,10 +880,12 @@ runs:
         }
         
         retry_clone "https://github.com/WildKernels/kernel_patches.git" "main" "1"
-        retry_clone "https://github.com/maxsteeel/nomount.git" "dev" "1"
+        git clone --no-checkout --depth 1 "https://github.com/maxsteeel/nomount.git" nomount
+        git -C nomount fetch --depth 1 origin 1dacddf5d85ced5b6c26ab09e621e366e4f0cd88
+        git -C nomount checkout --detach 1dacddf5d85ced5b6c26ab09e621e366e4f0cd88
         NOMOUNT_COMMIT_SHA="$(git -C nomount rev-parse HEAD)"
         echo "NOMOUNT_COMMIT_SHA=$NOMOUNT_COMMIT_SHA" >> "$GITHUB_ENV"
-        echo "Using NoMount dev commit: $NOMOUNT_COMMIT_SHA"
+        echo "Using pinned NoMount dev commit: $NOMOUNT_COMMIT_SHA"
         if [ "${{ env.OP_SUSFS }}" = true ]; then
           echo "Using SUSFS branch/commit: $SUSFS_BRANCH"
           if ! retry_fetch_archive "https://gitlab.com/simonpunk/susfs4ksu.git" "$SUSFS_BRANCH"; then
@@ -961,6 +966,56 @@ runs:
         echo "✅ KernelSU added (commit: ${KSU_COMMIT_SHA:0:8})"
         echo "::endgroup::"
 
+    - name: Add KernelSU Next
+      shell: bash
+      if: ${{ inputs.ksu_type == 'KSUN' }}
+      run: |
+        set -euo pipefail
+        echo "::group::Add KernelSU Next"
+        cd "$KERNEL_PLATFORM_FOLDER"
+        KSU_INPUT="${{ inputs.ksu_branch_or_hash }}"
+        if [ -z "$KSU_INPUT" ]; then
+          KSU_INPUT="3b18216f71df189ab3d1b1ce0bdb21be1268e771"
+        fi
+
+        curl --fail --location --proto '=https' -LSs \
+          "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/3b18216f71df189ab3d1b1ce0bdb21be1268e771/kernel/setup.sh" \
+          | bash -s "$KSU_INPUT"
+        git -C KernelSU-Next submodule update --init --recursive
+        cd KernelSU-Next/kernel
+
+        commits_count="$(git rev-list --count HEAD)"
+        if [ "$commits_count" -lt 2684 ]; then
+          base_version=10200
+        else
+          base_version=30000
+        fi
+        KSU_VERSION="$((commits_count + base_version))"
+        sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" Makefile
+
+        if [ -f ksu.c ]; then
+          sed -i 's/#if defined(CONFIG_STACKPROTECTOR) && (defined(CONFIG_ARM64) && !defined(CONFIG_STACKPROTECTOR_PER_TASK))/#if 0/' ksu.c
+        fi
+        if [ "$KSU_VERSION" -gt 33095 ] && [ "${{ env.KERNEL_VER }}" = "6.12" ]; then
+          sed -i 's|ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include|ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include -I$(KSU_KERNEL_DIR)/include/uapi|' Kbuild
+          sed -i 's|$(src)|$(abspath $(src))|' Kbuild
+          sed -i 's|$(srctree)/$(src)|$(abspath $(srctree)/$(src))|' Kbuild
+        fi
+
+        KSU_COMMIT_SHA="$(git rev-parse HEAD)"
+        echo "KSU_COMMIT_SHA=$KSU_COMMIT_SHA" >> "$GITHUB_ENV"
+        echo "NEED_HOOKS=false" >> "$GITHUB_ENV"
+        cat >> "$COMMON_KERNEL_FOLDER/arch/arm64/configs/gki_defconfig" <<EOF
+        CONFIG_KSU=y
+        CONFIG_KSU_KPROBES_HOOK=n
+        EOF
+
+        printf '%s\n%s\n' "KSUN" "$KSU_VERSION" >> "${ARTIFACTS_FOLDER}/${OP_MODEL}_${OP_OS_VERSION}.txt"
+        echo "KSUVER=$KSU_VERSION" >> "$GITHUB_ENV"
+        echo "KernelSU Next Version: $KSU_VERSION"
+        echo "✅ KernelSU Next added (commit: ${KSU_COMMIT_SHA:0:8})"
+        echo "::endgroup::"
+
     - name: Add ReSukiSU (The Sukisaku Project)
       shell: bash
       if: ${{ inputs.ksu_type == 'ReSukiSU' }}
@@ -1039,7 +1094,21 @@ runs:
             fi
             ;;
           "v2.2.0")
-            if [ "${{ inputs.ksu_type }}" = "KSU" ]; then
+            if [ "${{ inputs.ksu_type }}" = "KSUN" ]; then
+              cd "$KSUN_FOLDER"
+              patch -p1 --forward < "$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" || true
+              while IFS= read -r rejected; do
+                source_name="$(basename "$rejected" .rej)"
+                patch_file="$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/fix_${source_name}.patch"
+                if [ ! -f "$patch_file" ]; then
+                  echo "::error::Missing KernelSU Next SUSFS compatibility patch: $patch_file"
+                  exit 1
+                fi
+                patch -p1 --forward < "$patch_file"
+              done < <(find ./kernel -maxdepth 2 -name "*.rej" -exec basename {} \;)
+              patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/overwrite_hook_mode.patch"
+              patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/ksu_toolkit.patch"
+            elif [ "${{ inputs.ksu_type }}" = "KSU" ]; then
               cd "$KSU_FOLDER"
               patch -p1 --forward < "$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" || true
             else
