@@ -1101,9 +1101,21 @@ runs:
                 # KernelSU Next v3.3.0 already accepts the primary SUSFS Kconfig
                 # addition; only the obsolete secondary hunk is rejected.
                 if ! grep -q '^config KSU_SUSFS' ./kernel/Kconfig; then
-                  echo "::error::KernelSU Next SUSFS Kconfig addition did not apply"
-                  cat ./kernel/Kconfig.rej
-                  exit 1
+                  if ! tail -n 1 ./kernel/Kconfig | grep -qx 'endmenu'; then
+                    echo "::error::KernelSU Next Kconfig does not end in an insertable menu"
+                    cat ./kernel/Kconfig.rej
+                    exit 1
+                  fi
+                  susfs_kconfig_block="$(sed -n '/^+menu "KernelSU - SUSFS"/,/^+endmenu/p' ./kernel/Kconfig.rej | sed 's/^+//')"
+                  if [ -z "$susfs_kconfig_block" ]; then
+                    echo "::error::Could not recover the required KernelSU Next SUSFS Kconfig block"
+                    cat ./kernel/Kconfig.rej
+                    exit 1
+                  fi
+                  tmp_kconfig="$(mktemp)"
+                  sed '$d' ./kernel/Kconfig > "$tmp_kconfig"
+                  printf '%s\n' "$susfs_kconfig_block" >> "$tmp_kconfig"
+                  mv "$tmp_kconfig" ./kernel/Kconfig
                 fi
                 rm ./kernel/Kconfig.rej
               fi
