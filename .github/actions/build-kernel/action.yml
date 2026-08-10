@@ -1155,47 +1155,30 @@ runs:
               done
               # Filtering the upstream SUSFS patch skips its local sucompat
               # helper and imports. Restore those exact dependencies here.
-              python3 - <<'PY'
-              from pathlib import Path
-
-              def replace_once(path, needle, replacement):
-                  source = path.read_text()
-                  if source.count(needle) != 1:
-                      raise SystemExit(
-                          f"unexpected {path}: expected one occurrence of {needle!r}"
-                      )
-                  path.write_text(source.replace(needle, replacement))
-
-              sucompat = Path("kernel/feature/sucompat.c")
-              replace_once(
-                  sucompat,
-                  "#include <linux/ptrace.h>\n",
-                  "#include <linux/ptrace.h>\n"
-                  "#include <linux/fs_struct.h>\n"
-                  "#include <linux/susfs_def.h>\n",
-              )
-              replace_once(
-                  sucompat,
-                  "static char __user *ksud_user_path(void)\n",
-                  "static char __user *sh_user_path(void)\n"
-                  "{\n"
-                  "\tstatic const char sh_path[] = \"/system/bin/sh\";\n"
-                  "\n"
-                  "\treturn userspace_stack_buffer(sh_path, sizeof(sh_path));\n"
-                  "}\n"
-                  "\n"
-                  "static char __user *ksud_user_path(void)\n",
-              )
-
-              setuid_hook = Path("kernel/hook/setuid_hook.c")
-              replace_once(
-                  setuid_hook,
-                  "#include <linux/uidgid.h>\n",
-                  "#include <linux/uidgid.h>\n"
-                  "#include <linux/susfs_def.h>\n"
-                  '#include "selinux/selinux.h"\n',
-              )
-              PY
+              sucompat_source=./kernel/feature/sucompat.c
+              setuid_hook_source=./kernel/hook/setuid_hook.c
+              if [ "$(grep -Fxc '#include <linux/ptrace.h>' "$sucompat_source")" -ne 1 ] ||
+                 [ "$(grep -Fxc '#include <linux/uidgid.h>' "$setuid_hook_source")" -ne 1 ] ||
+                 [ "$(grep -Fxc 'static char __user *ksud_user_path(void)' "$sucompat_source")" -ne 1 ]; then
+                echo "::error::Unexpected KernelSU Next v3.3.0 SUSFS helper layout"
+                exit 1
+              fi
+              sed -i '/^#include <linux\/ptrace.h>$/a #include <linux/fs_struct.h>\n#include <linux/susfs_def.h>' "$sucompat_source"
+              sed -i '/^#include <linux\/uidgid.h>$/a #include <linux/susfs_def.h>\n#include "selinux/selinux.h"' "$setuid_hook_source"
+              tmp_sucompat="$(mktemp)"
+              awk '
+                /^static char __user \*ksud_user_path\(void\)$/ {
+                  print "static char __user *sh_user_path(void)"
+                  print "{"
+                  print "\tstatic const char sh_path[] = \"/system/bin/sh\";"
+                  print ""
+                  print "\treturn userspace_stack_buffer(sh_path, sizeof(sh_path));"
+                  print "}"
+                  print ""
+                }
+                { print }
+              ' "$sucompat_source" > "$tmp_sucompat"
+              mv "$tmp_sucompat" "$sucompat_source"
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/overwrite_hook_mode.patch"
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/ksu_toolkit.patch"
             elif [ "${{ inputs.ksu_type }}" = "KSU" ]; then
