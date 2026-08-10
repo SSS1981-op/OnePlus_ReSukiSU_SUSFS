@@ -1163,7 +1163,7 @@ runs:
                 echo "::error::Unexpected KernelSU Next v3.3.0 SUSFS helper layout"
                 exit 1
               fi
-              sed -i '/^#include <linux\/ptrace.h>$/a #include <linux/fs_struct.h>\n#include <linux/susfs_def.h>' "$sucompat_source"
+              sed -i '/^#include <linux\/ptrace.h>$/a #include <linux/fs_struct.h>\n#include <linux/susfs_def.h>\n#include "selinux/selinux.h"' "$sucompat_source"
               sed -i '/^#include <linux\/uidgid.h>$/a #include <linux/susfs_def.h>\n#include "selinux/selinux.h"' "$setuid_hook_source"
               tmp_sucompat="$(mktemp)"
               awk '
