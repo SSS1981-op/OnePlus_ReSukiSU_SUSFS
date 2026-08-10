@@ -876,12 +876,31 @@ jobs:
       REPO_NAME: ${{ github.event.repository.name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SUSFS_BASE_VERSION: ${{ needs.set-op-model.outputs.susfs_base_version }}
-      RELEASE_NAME: 'OnePlus Kernels With KernelSU Next, SUSFS ${{ needs.set-op-model.outputs.susfs_base_version }}, and NoMount'
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: 🏷️ Configure root-specific release metadata
+        run: |
+          case "${{ inputs.ksu_type }}" in
+            KSUN)
+              root_display="KernelSU Next"
+              ;;
+            ReSukiSU)
+              root_display="ReSukiSU"
+              ;;
+            KSU)
+              root_display="KernelSU"
+              ;;
+            *)
+              echo "::error::Unsupported root implementation '${{ inputs.ksu_type }}'."
+              exit 1
+              ;;
+          esac
+          echo "ROOT_DISPLAY=$root_display" >> "$GITHUB_ENV"
+          echo "RELEASE_NAME=OnePlus Kernels With $root_display, SUSFS $SUSFS_BASE_VERSION, and NoMount" >> "$GITHUB_ENV"
 
       - name: 🏷️ Generate and Create New Tag
         run: |
@@ -940,14 +959,34 @@ jobs:
             printf '%s  %s\n' "$expected_sha256" "$name" | sha256sum --check --status
           }
 
-          download_and_verify \
-            "https://github.com/KernelSU-Next/KernelSU-Next/releases/download/v3.3.0/KernelSU_Next_v3.3.0_33214-release.apk" \
-            "KernelSU_Next_v3.3.0_33214-release.apk" \
-            "fd0b12385c98fe9d5f4f1257b5f184e55c74c1376637507df0718305f5d7a924"
-          download_and_verify \
-            "https://github.com/KernelSU-Next/KernelSU-Next/releases/download/v3.3.0/KernelSU_Next_v3.3.0-spoofed_33214-release.apk" \
-            "KernelSU_Next_v3.3.0-spoofed_33214-release.apk" \
-            "773d99e256563d36f8543235c96274021c59cf65efed783170bbc7effdf24ee3"
+          case "${{ inputs.ksu_type }}" in
+            KSUN)
+              download_and_verify \
+                "https://github.com/KernelSU-Next/KernelSU-Next/releases/download/v3.3.0/KernelSU_Next_v3.3.0_33214-release.apk" \
+                "KernelSU_Next_v3.3.0_33214-release.apk" \
+                "fd0b12385c98fe9d5f4f1257b5f184e55c74c1376637507df0718305f5d7a924"
+              download_and_verify \
+                "https://github.com/KernelSU-Next/KernelSU-Next/releases/download/v3.3.0/KernelSU_Next_v3.3.0-spoofed_33214-release.apk" \
+                "KernelSU_Next_v3.3.0-spoofed_33214-release.apk" \
+                "773d99e256563d36f8543235c96274021c59cf65efed783170bbc7effdf24ee3"
+              ;;
+            ReSukiSU)
+              download_and_verify \
+                "https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases/download/nomount-dev-20260809/ReSukiSU_v4.1.0_35055-arm64-v8a-release.apk" \
+                "ReSukiSU_v4.1.0_35055-arm64-v8a-release.apk" \
+                "78862d9adcca1c1281e0df26680e9cb7d7cb6ebee7cb5994b2ffbde9e0ab377a"
+              download_and_verify \
+                "https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases/download/nomount-dev-20260809/ReSukiSU_v4.1.0-spoofed_35055-arm64-v8a-release.apk" \
+                "ReSukiSU_v4.1.0-spoofed_35055-arm64-v8a-release.apk" \
+                "f48de5859406a161b75de97ae91b8c2595421498b574d0c88a5ee373121e3e43"
+              ;;
+            KSU)
+              download_and_verify \
+                "https://github.com/tiann/KernelSU/releases/download/v3.2.5/KernelSU_v3.2.5_32525-release.apk" \
+                "KernelSU_v3.2.5_32525-release.apk" \
+                "1417081413bf7ab1de8e440ecbcb62685037c8f28f048f0f8b79e305b31ab916"
+              ;;
+          esac
           download_and_verify \
             "https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases/download/nomount-dev-20260809/NoMount-v1.1.1-dev-1dacddf-ReSukiSU.zip" \
             "NoMount-v1.1.1-dev-1dacddf-ReSukiSU.zip" \
@@ -1005,7 +1044,7 @@ jobs:
             <<< "${{ needs.set-op-model.outputs.active_gki_keys }}"
           
           cat << EOF > release_notes.md
-          # 🎯 OnePlus Kernels with KernelSU Next, SUSFS $SUSFS_BASE_VERSION, and NoMount
+          # 🎯 OnePlus Kernels with $ROOT_DISPLAY, SUSFS $SUSFS_BASE_VERSION, and NoMount
           
           > **Build Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')  
           > **Build ID:** \`${{ github.run_id }}\`  
@@ -1079,7 +1118,7 @@ jobs:
             fi
             
             if [[ "$os_ver" =~ ^OOS[0-9]+$ ]]; then
-              os_display_version="Android ${os_ver#OOS}"
+              os_display_version="OxygenOS ${os_ver#OOS}"
             else
               os_display_version=$os_ver
             fi
@@ -1097,6 +1136,11 @@ jobs:
             echo "::error::No device info found!" >&2
             exit 1
           fi
+          case "$ksu_type" in
+            KSUN) root_release_label="KernelSU Next v3.3.0" ;;
+            ReSukiSU) root_release_label="ReSukiSU $ksu_ver_global" ;;
+            KSU) root_release_label="KernelSU $ksu_ver_global" ;;
+          esac
           
           cat << EOF >> release_notes.md
           
@@ -1124,9 +1168,9 @@ jobs:
           | **KernelSU Next Branch/Hash** | \`$ksu_display\` |
           | **KernelSU Next Version** | \`$ksu_ver_global\` |
           EOF
-          elif [ "$KSU_TYPE" = "ReSukiSU" ]; then
+          elif [ "$ksu_type" = "ReSukiSU" ]; then
             cat << EOF >> release_notes.md
-          | **ReSukiSU Branch/Hash** | \`$KSU_BRANCH\` |
+          | **ReSukiSU Branch/Hash** | \`$ksu_display\` |
           | **ReSukiSU Version** | \`$ksu_ver_global\` |
           EOF
           elif [ "$ksu_type" == "KSU" ]; then
@@ -1223,13 +1267,15 @@ jobs:
           EOF
           elif [ "$ksu_type" == "ReSukiSU" ]; then
             cat << EOF >> release_notes.md
-          - **ReSukiSU Manager**  
-            → [Offical Documentation](https://resukisu.github.io/guide/install.html#Get-manager)
+          - **ReSukiSU Manager**
+            → [Official Documentation](https://resukisu.github.io/guide/install.html#Get-manager)
+          - **Included release assets:** regular and spoofed ReSukiSU v4.1.0 managers plus the verified NoMount flashable ZIP.
           EOF
           elif [ "$ksu_type" == "KSU" ]; then
             cat << EOF >> release_notes.md
-          - **KernelSU Manager**  
-            → [GitHub Release](https://github.com/tiann/KernelSU/releases)
+          - **KernelSU Manager**
+            → [GitHub Release](https://github.com/tiann/KernelSU/releases/tag/v3.2.5)
+          - **Included release assets:** official KernelSU v3.2.5 manager plus the verified NoMount flashable ZIP.
           ### Required Module
           - **KSU SUSFS Module** (Required for SUSFS features)  
             → [GitHub Release](https://github.com/sidex15/ksu_module_susfs/releases)
@@ -1260,7 +1306,7 @@ jobs:
           ## 📜 Changelog
           
           ### This Release
-          - KernelSU Next v3.3.0, SUSFS $SUSFS_BASE_VERSION, and NoMount dev integration.
+          - $root_release_label, SUSFS $SUSFS_BASE_VERSION, and NoMount dev integration.
           - IPSet, IPv6 NAT, TTL / hop-limit targets, and BBR networking support.
           - TMPFS XATTR / POSIX ACL, Droidspaces, NTSync, and USB OTG support.
           - Ptrace compatibility for older kernel families and Unicode path handling fixes.
@@ -1289,9 +1335,9 @@ jobs:
           fi
           cat << EOF >> release_notes.md
           - **[simonpunk](https://gitlab.com/simonpunk/susfs4ksu)** - SUSFS development
-          - **MaxSteel** - NoMount integration
-          - **OnePlus** - Kernel source code
-          - **Community Contributors** - Testing and feedback
+          - **[MaxSteel](https://github.com/maxsteeel/nomount)** - NoMount integration
+          - **[OnePlus](https://github.com/OnePlusOSS)** - Kernel source code
+          - **[Community Contributors](https://github.com/${{ github.repository }}/graphs/contributors)** - Testing and feedback
 
           ---
           
@@ -1372,9 +1418,9 @@ jobs:
           
           echo "Aggregating artifact statistics..."
           
-          # Safely read all zip files into an array
+          # Safely read kernel ZIP files into an array.
           shopt -s nullglob
-          ZIPS=(./downloaded-artifacts/*.zip)
+          ZIPS=(./downloaded-artifacts/AK3_*.zip)
           shopt -u nullglob
           
           ZIP_COUNT=${#ZIPS[@]}
@@ -1401,14 +1447,14 @@ jobs:
           # Use pure Bash multi-line string. True newlines are preserved!
           MSG_TEXT="╭──────────────────────╮
           🌌 <b>REALS3S // KERNEL LAB</b>
-          <i>OnePlus • KernelSU Next • SUSFS • NoMount</i>
+          <i>OnePlus • ${ROOT_DISPLAY} • SUSFS • NoMount</i>
           ╰──────────────────────╯
           ┈
           <b>NEW RELEASE IS READY</b> ✨
           🏷️ <code>${{ env.NEW_TAG }}</code>
           ┈
           <b>CORE STACK</b>
-          🔐 KernelSU Next <code>v${KSU_VERS}</code>
+          🔐 ${ROOT_DISPLAY} <code>v${KSU_VERS}</code>
           🛡️ SUSFS <code>${{ env.SUSFS_BASE_VERSION }}</code>
           🚫 NoMount <b>integrated</b>
           ⚙️ Clang ${{ inputs.optimize_level }} • Clean build: ${{ inputs.clean_build }}
