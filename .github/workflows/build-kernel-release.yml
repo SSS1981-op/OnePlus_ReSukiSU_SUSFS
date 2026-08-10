@@ -1292,7 +1292,8 @@ jobs:
           gh release create "${{ env.NEW_TAG }}" \
             --repo "${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}" \
             --title "${{ env.RELEASE_NAME }}" \
-            --notes-file release_notes.md
+            --notes-file release_notes.md \
+            --draft
 
       - name: 📤 Upload Release Assets Dynamically
         run: |
@@ -1308,6 +1309,12 @@ jobs:
               gh release upload "${{ env.NEW_TAG }}" "$file" --clobber
             fi
           done
+
+      - name: ✅ Publish complete release
+        run: |
+          gh release edit "${{ env.NEW_TAG }}" \
+            --repo "${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}" \
+            --draft=false
 
       - name: 📊 Release summary
         if: success()
