@@ -128,7 +128,7 @@
         <div>
           <div class="eyebrow">OnePlus kernel packages</div>
           <h1 id="page-title">Pick the kernel built for your device.</h1>
-          <p class="lede">Official KernelSU Next + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
+          <p class="lede">Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
           <div class="stats">
             <span class="stat" id="package-count">Loading packages</span>
             <span class="stat">NoMount dev integrated</span>
@@ -220,16 +220,24 @@
           (rootFilter === "all" || item.root === rootFilter)
         );
         const byRelease = visible.reduce((result, item) => {
-          const key = `${item.root}:${item.oos}`;
-          if (!result[key]) result[key] = [];
-          result[key].push(item);
+          const key = `${item.release.id}:${item.root}:${item.oos}`;
+          if (!result[key]) {
+            result[key] = {
+              release: item.release,
+              root: item.root,
+              oos: item.oos,
+              assets: []
+            };
+          }
+          result[key].assets.push(item);
           return result;
         }, {});
-        groups.replaceChildren(...Object.entries(byRelease).sort(([left], [right]) => left.localeCompare(right)).map(([key, assets]) => {
-          const [root, oos] = key.split(":");
+        groups.replaceChildren(...Object.values(byRelease).sort((left, right) =>
+          new Date(right.release.published_at) - new Date(left.release.published_at)
+        ).map(({ release, root, oos, assets }) => {
           const section = document.createElement("section");
           section.className = "group";
-          section.innerHTML = `<div class="group-title"><span>${rootLabels[root]} · ${oos.replace("OOS", "OxygenOS ")}</span><span>${assets.length} packages</span></div>`;
+          section.innerHTML = `<div class="group-title"><span>${release.name} · ${rootLabels[root]} · ${oos.replace("OOS", "OxygenOS ")}</span><span>${assets.length} packages</span></div>`;
           const grid = document.createElement("div");
           grid.className = "assets";
           assets.sort((a, b) => a.model.localeCompare(b.model)).forEach(asset => {
@@ -242,7 +250,10 @@
           section.append(grid);
           return section;
         }));
-        status.textContent = visible.length ? `${visible.length} compatible package${visible.length === 1 ? "" : "s"} shown.` : "No packages match this filter.";
+        const releaseCount = new Set(visible.map(item => item.release.id)).size;
+        status.textContent = visible.length
+          ? `${visible.length} compatible package${visible.length === 1 ? "" : "s"} from ${releaseCount} published release${releaseCount === 1 ? "" : "s"} shown.`
+          : "No packages match this filter.";
       }
       document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
         filter = button.dataset.filter;
@@ -258,13 +269,12 @@
         .then(response => response.ok ? response.json() : Promise.reject(new Error("Release API unavailable")))
         .then(releases => {
           const publishedReleases = releases.filter(item => !item.draft && !item.prerelease);
-          const releasesByRoot = Object.keys(rootLabels).map(root => publishedReleases.find(item =>
-            item.assets.some(asset => parseAsset(asset)?.root === root)
-          )).filter(Boolean);
-          if (!releasesByRoot.length) throw new Error("Packages are still being published");
-          packages = releasesByRoot.flatMap(release => release.assets.map(parseAsset).filter(Boolean));
+          packages = publishedReleases.flatMap(release =>
+            release.assets.map(parseAsset).filter(Boolean).map(asset => ({ ...asset, release }))
+          );
+          if (!packages.length) throw new Error("Packages are still being published");
           const tools = document.querySelector("#tools");
-          const ksunRelease = releasesByRoot.find(release =>
+          const ksunRelease = publishedReleases.find(release =>
             release.assets.some(asset => parseAsset(asset)?.root === "KSUN")
           );
           const byName = new Map((ksunRelease?.assets ?? []).map(asset => [asset.name, asset]));
@@ -276,7 +286,8 @@
             card.innerHTML = `<b>${tool.title}</b><small>${tool.description}</small><span class="download">${asset ? "Download &rarr;" : "Publishing soon"}</span>`;
             return card;
           }));
-          count.textContent = `${packages.length} packages from ${releasesByRoot.length} published root release${releasesByRoot.length === 1 ? "" : "s"}`;
+          const releaseCount = new Set(packages.map(item => item.release.id)).size;
+          count.textContent = `${packages.length} packages from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
           render();
         })
         .catch(error => {
