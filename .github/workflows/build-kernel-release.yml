@@ -1270,14 +1270,29 @@ jobs:
           See [Releases Page](${{ github.server_url }}/${{ github.repository }}/releases)
           
           ---
-          
+
           ## 🙏 Credits
-          
-          - **ReSukiSU Team** - Root solution
-          - **simonpunk** - SUSFS development
+
+          EOF
+          if [ "$ksu_type" == "KSUN" ]; then
+            cat << EOF >> release_notes.md
+          - **[KernelSU Next Team](https://github.com/KernelSU-Next/KernelSU-Next)** - Root solution
+          EOF
+          elif [ "$ksu_type" == "ReSukiSU" ]; then
+            cat << EOF >> release_notes.md
+          - **[ReSukiSU Team](https://github.com/ReSukiSU/ReSukiSU)** - Root solution
+          EOF
+          elif [ "$ksu_type" == "KSU" ]; then
+            cat << EOF >> release_notes.md
+          - **[KernelSU / tiann](https://github.com/tiann/KernelSU)** - Root solution
+          EOF
+          fi
+          cat << EOF >> release_notes.md
+          - **[simonpunk](https://gitlab.com/simonpunk/susfs4ksu)** - SUSFS development
+          - **MaxSteel** - NoMount integration
           - **OnePlus** - Kernel source code
           - **Community Contributors** - Testing and feedback
-          
+
           ---
           
           **⚡ RealS3S Kernel Lab**

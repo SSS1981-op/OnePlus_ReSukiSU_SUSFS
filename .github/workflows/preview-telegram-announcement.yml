@@ -47,6 +47,8 @@ jobs:
           zip_count="$(jq '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip"))] | length' <<< "$release_json")"
           models="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[1]] | unique | join(", ")' <<< "$release_json")"
           oos_versions="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[2]] | unique | join(", ")' <<< "$release_json")"
+          root_count="$(jq '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[4]] | unique | length' <<< "$release_json")"
+          root_token="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[4]] | unique | first // empty' <<< "$release_json")"
           ksu_version="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[5]] | unique | join(", ")' <<< "$release_json")"
           susfs_version="$(jq -r '[.assets[] | select(.name | startswith("AK3_") and endswith(".zip")) | .name | split("_")[7] | sub("\\.zip$"; "")] | unique | join(", ")' <<< "$release_json")"
 
@@ -54,6 +56,19 @@ jobs:
             echo "::error::Release '${RELEASE_TAG}' contains no kernel ZIP assets."
             exit 1
           fi
+          if [ "$root_count" -ne 1 ]; then
+            echo "::error::Release '${RELEASE_TAG}' must contain exactly one root implementation."
+            exit 1
+          fi
+          case "$root_token" in
+            KSUN) root_display="KernelSU Next" ;;
+            ReSukiSU) root_display="ReSukiSU" ;;
+            KSU) root_display="KernelSU" ;;
+            *)
+              echo "::error::Unsupported root implementation '${root_token}' in release '${RELEASE_TAG}'."
+              exit 1
+              ;;
+          esac
 
           channel_line=""
           if [ -n "$TG_CHANNEL_URL" ]; then
@@ -72,14 +87,14 @@ jobs:
           message="${announcement_heading}
           ╭──────────────────────╮
           🌌 <b>REALS3S // KERNEL LAB</b>
-          <i>OnePlus • ReSukiSU • SUSFS • NoMount</i>
+          <i>OnePlus • ${root_display} • SUSFS • NoMount</i>
           ╰──────────────────────╯
           ┈
           ${release_heading}
           🏷️ <code>${RELEASE_TAG}</code>
           ┈
           <b>CORE STACK</b>
-          🔐 ReSukiSU <code>v${ksu_version}</code>
+          🔐 ${root_display} <code>v${ksu_version}</code>
           🛡️ SUSFS <code>${susfs_version}</code>
           🚫 NoMount <b>integrated</b>
           ⚙️ Clang O2 • Clean build: false
