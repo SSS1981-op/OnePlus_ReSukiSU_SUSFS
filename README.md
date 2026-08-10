@@ -23,7 +23,7 @@ Project maintainer and release publisher
 
 | Upstream contributors |
 |:---:|
-| [magi (@maxsteeel)](https://t.me/maxsteeel) · [荻少 (@huangdihd)](https://t.me/huangdihd) · [fatalcoder524](https://t.me/fatalcoder524) |
+| [magi (@maxsteeel)](https://t.me/maxsteeel) · [荻少 (@huangdihd)](https://t.me/huangdihd) · [fatalcoder524](https://t.me/fatalcoder524) · [The Wild James (@TheWildJames)](https://t.me/TheWildJames) |
 
 </div>
 
