@@ -1111,7 +1111,18 @@ runs:
                   echo "::error::KernelSU Next Kconfig does not end in an insertable menu"
                   exit 1
                 fi
-                susfs_kconfig_block="$(sed -n '/^+menu "KernelSU - SUSFS"/,/^+endmenu/p' "$susfs_ksun_patch" | sed 's/^+//')"
+                susfs_kconfig_block="$(awk '
+                  /^\+menu "KernelSU - SUSFS"/ { active = 1 }
+                  active {
+                    print substr($0, 2)
+                    if ($0 ~ /^\+menu /) {
+                      depth++
+                    } else if ($0 ~ /^\+endmenu$/) {
+                      depth--
+                      if (depth == 0) exit
+                    }
+                  }
+                ' "$susfs_ksun_patch")"
                 if [ -z "$susfs_kconfig_block" ]; then
                   echo "::error::Could not extract the required KernelSU Next SUSFS Kconfig block"
                   exit 1
