@@ -1183,7 +1183,54 @@ runs:
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/ksu_toolkit.patch"
             elif [ "${{ inputs.ksu_type }}" = "KSU" ]; then
               cd "$KSU_FOLDER"
-              patch -p1 --forward < "$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" || true
+              susfs_ksu_patch="$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
+              filtered_susfs_patch="$(mktemp)"
+              # SUSFS v2.2.0 targets the pre-v3.2 KernelSU hook architecture.
+              # Keep v3.2.5's modern hook and late-load implementation intact.
+              awk '
+                /^diff --git a\/kernel\/(Kbuild|Kconfig|core\/init\.c|feature\/kernel_umount\.c|feature\/sucompat\.c|feature\/sucompat\.h|hook\/setuid_hook\.c|supercall\/supercall\.c) b\// { skip = 1; next }
+                /^diff --git / { skip = 0 }
+                !skip { print }
+              ' "$susfs_ksu_patch" > "$filtered_susfs_patch"
+              patch -p1 --forward < "$filtered_susfs_patch"
+              rm "$filtered_susfs_patch"
+
+              if ! grep -q '^config KSU_SUSFS' ./kernel/Kconfig; then
+                if ! tail -n 1 ./kernel/Kconfig | grep -qx 'endmenu'; then
+                  echo "::error::KernelSU v3.2.5 Kconfig does not end in an insertable menu"
+                  exit 1
+                fi
+                susfs_kconfig_block="$(awk '
+                  /^\+menu "KernelSU - SUSFS"/ { active = 1 }
+                  active {
+                    print substr($0, 2)
+                    if ($0 ~ /^\+menu /) {
+                      depth++
+                    } else if ($0 ~ /^\+endmenu$/) {
+                      depth--
+                      if (depth == 0) exit
+                    }
+                  }
+                ' "$susfs_ksu_patch")"
+                if [ -z "$susfs_kconfig_block" ]; then
+                  echo "::error::Could not extract the required KernelSU v3.2.5 SUSFS Kconfig block"
+                  exit 1
+                fi
+                tmp_kconfig="$(mktemp)"
+                sed '$d' ./kernel/Kconfig > "$tmp_kconfig"
+                printf '%s\n' "$susfs_kconfig_block" >> "$tmp_kconfig"
+                printf '%s\n' 'endmenu' >> "$tmp_kconfig"
+                mv "$tmp_kconfig" ./kernel/Kconfig
+              fi
+
+              init_source=./kernel/core/init.c
+              if [ "$(grep -Fxc '#include <linux/moduleparam.h>' "$init_source")" -ne 1 ] ||
+                 [ "$(grep -Fxc '    ksu_init_symbol_resolver();' "$init_source")" -ne 1 ]; then
+                echo "::error::Unexpected KernelSU v3.2.5 init layout"
+                exit 1
+              fi
+              sed -i '/^#include <linux\/moduleparam.h>$/a #include <linux/susfs.h>' "$init_source"
+              sed -i '/^    ksu_init_symbol_resolver();$/i #ifdef CONFIG_KSU_SUSFS\n    susfs_init();\n#endif' "$init_source"
             else
               echo "ℹ️ Skipping KernelSU folder patch for ReSukiSU"
             fi
