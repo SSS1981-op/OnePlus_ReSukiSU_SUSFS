@@ -1130,6 +1130,7 @@ runs:
                 tmp_kconfig="$(mktemp)"
                 sed '$d' ./kernel/Kconfig > "$tmp_kconfig"
                 printf '%s\n' "$susfs_kconfig_block" >> "$tmp_kconfig"
+                printf '%s\n' 'endmenu' >> "$tmp_kconfig"
                 mv "$tmp_kconfig" ./kernel/Kconfig
               fi
 
