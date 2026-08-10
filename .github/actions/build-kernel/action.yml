@@ -1097,6 +1097,16 @@ runs:
             if [ "${{ inputs.ksu_type }}" = "KSUN" ]; then
               cd "$KSUN_FOLDER"
               patch -p1 --forward < "$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" || true
+              if [ -f ./kernel/Kconfig.rej ]; then
+                # KernelSU Next v3.3.0 already accepts the primary SUSFS Kconfig
+                # addition; only the obsolete secondary hunk is rejected.
+                if ! grep -q '^config KSU_SUSFS' ./kernel/Kconfig; then
+                  echo "::error::KernelSU Next SUSFS Kconfig addition did not apply"
+                  cat ./kernel/Kconfig.rej
+                  exit 1
+                fi
+                rm ./kernel/Kconfig.rej
+              fi
               while IFS= read -r rejected; do
                 source_name="$(basename "$rejected" .rej)"
                 patch_file="$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/fix_${source_name}.patch"
