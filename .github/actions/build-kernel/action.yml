@@ -1096,38 +1096,35 @@ runs:
           "v2.2.0")
             if [ "${{ inputs.ksu_type }}" = "KSUN" ]; then
               cd "$KSUN_FOLDER"
-              patch -p1 --forward < "$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" || true
-              if [ -f ./kernel/Kconfig.rej ]; then
-                # KernelSU Next v3.3.0 already accepts the primary SUSFS Kconfig
-                # addition; only the obsolete secondary hunk is rejected.
-                if ! grep -q '^config KSU_SUSFS' ./kernel/Kconfig; then
-                  if ! tail -n 1 ./kernel/Kconfig | grep -qx 'endmenu'; then
-                    echo "::error::KernelSU Next Kconfig does not end in an insertable menu"
-                    cat ./kernel/Kconfig.rej
-                    exit 1
-                  fi
-                  susfs_kconfig_block="$(sed -n '/^+menu "KernelSU - SUSFS"/,/^+endmenu/p' ./kernel/Kconfig.rej | sed 's/^+//')"
-                  if [ -z "$susfs_kconfig_block" ]; then
-                    echo "::error::Could not recover the required KernelSU Next SUSFS Kconfig block"
-                    cat ./kernel/Kconfig.rej
-                    exit 1
-                  fi
-                  tmp_kconfig="$(mktemp)"
-                  sed '$d' ./kernel/Kconfig > "$tmp_kconfig"
-                  printf '%s\n' "$susfs_kconfig_block" >> "$tmp_kconfig"
-                  mv "$tmp_kconfig" ./kernel/Kconfig
-                fi
-                rm ./kernel/Kconfig.rej
-              fi
-              while IFS= read -r rejected; do
-                source_name="$(basename "$rejected" .rej)"
-                patch_file="$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/fix_${source_name}.patch"
-                if [ ! -f "$patch_file" ]; then
-                  echo "::error::Missing KernelSU Next SUSFS compatibility patch: $patch_file"
+              susfs_ksun_patch="$SUSFS_FOLDER/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
+              filtered_susfs_patch="$(mktemp)"
+              awk '
+                /^diff --git a\/kernel\/(Kbuild|Kconfig|core\/init\.c|feature\/kernel_umount\.c|feature\/sucompat\.c|hook\/setuid_hook\.c|supercall\/supercall\.c) b\// { skip = 1; next }
+                /^diff --git / { skip = 0 }
+                !skip { print }
+              ' "$susfs_ksun_patch" > "$filtered_susfs_patch"
+              patch -p1 --forward < "$filtered_susfs_patch"
+              rm "$filtered_susfs_patch"
+
+              if ! grep -q '^config KSU_SUSFS' ./kernel/Kconfig; then
+                if ! tail -n 1 ./kernel/Kconfig | grep -qx 'endmenu'; then
+                  echo "::error::KernelSU Next Kconfig does not end in an insertable menu"
                   exit 1
                 fi
-                patch -p1 --forward < "$patch_file"
-              done < <(find ./kernel -maxdepth 2 -name "*.rej" -exec basename {} \;)
+                susfs_kconfig_block="$(sed -n '/^+menu "KernelSU - SUSFS"/,/^+endmenu/p' "$susfs_ksun_patch" | sed 's/^+//')"
+                if [ -z "$susfs_kconfig_block" ]; then
+                  echo "::error::Could not extract the required KernelSU Next SUSFS Kconfig block"
+                  exit 1
+                fi
+                tmp_kconfig="$(mktemp)"
+                sed '$d' ./kernel/Kconfig > "$tmp_kconfig"
+                printf '%s\n' "$susfs_kconfig_block" >> "$tmp_kconfig"
+                mv "$tmp_kconfig" ./kernel/Kconfig
+              fi
+
+              for compatibility_patch in fix_Kbuild.patch fix_init.c.patch fix_kernel_umount.c.patch fix_setuid_hook.c.patch fix_sucompat.c.patch fix_supercall.c.patch; do
+                patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
+              done
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/overwrite_hook_mode.patch"
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/ksu_toolkit.patch"
             elif [ "${{ inputs.ksu_type }}" = "KSU" ]; then
