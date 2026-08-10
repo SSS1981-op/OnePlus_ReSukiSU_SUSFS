@@ -2184,6 +2184,11 @@ runs:
       run: |
         set -euo pipefail
         echo "::group::Resolve KSU Symbol Dependencies"
+        if [ "${{ inputs.ksu_type }}" != "KSU" ]; then
+          echo "Skipping KernelSU-only symbol resolver fallback."
+          echo "::endgroup::"
+          exit 0
+        fi
         echo "Injecting fallback weak symbol into KernelSU resolver..."
         RESOLVER=$(find "$KSU_FOLDER" -name "symbol_resolver.c" | head -n 1)
         if [ -n "$RESOLVER" ]; then
