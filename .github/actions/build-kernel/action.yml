@@ -1122,15 +1122,24 @@ runs:
                 mv "$tmp_kconfig" ./kernel/Kconfig
               fi
 
-              # v3.3.0 dropped this guard, while the compatibility patch removes
-              # the entire x86 block; restore its expected context first.
-              sed -i 's/#if defined(__x86_64__)$/#if defined(__x86_64__) \&\& !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)/' ./kernel/core/init.c
+              # The v3.3.0 source omits the dispatcher guard in both x86
+              # blocks and has trailing whitespace in the init guard comment.
+              # Restore the v2.2.0 compatibility patch's exact preimage.
+              init_source=./kernel/core/init.c
+              if [ "$(grep -Fxc '#if defined(__x86_64__)' "$init_source")" -ne 2 ]; then
+                echo "::error::Unexpected KernelSU Next v3.3.0 x86 guard layout"
+                exit 1
+              fi
+              if [ "$(grep -Fxc '    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set ' "$init_source")" -ne 1 ]; then
+                echo "::error::Unexpected KernelSU Next v3.3.0 init guard comment"
+                exit 1
+              fi
+              sed -i \
+                -e 's|^#if defined(__x86_64__)$|#if defined(__x86_64__) \&\& !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)|' \
+                -e 's|^    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set $|    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set|' \
+                "$init_source"
               for compatibility_patch in fix_Kbuild.patch fix_init.c.patch fix_kernel_umount.c.patch fix_setuid_hook.c.patch fix_sucompat.c.patch fix_supercall.c.patch; do
-                if [ "$compatibility_patch" = "fix_init.c.patch" ]; then
-                  patch -p1 --forward --fuzz=3 -l < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
-                else
-                  patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
-                fi
+                patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
               done
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/overwrite_hook_mode.patch"
               patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/ksu_toolkit.patch"
