@@ -1127,7 +1127,7 @@ runs:
               sed -i 's/#if defined(__x86_64__)$/#if defined(__x86_64__) \&\& !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)/' ./kernel/core/init.c
               for compatibility_patch in fix_Kbuild.patch fix_init.c.patch fix_kernel_umount.c.patch fix_setuid_hook.c.patch fix_sucompat.c.patch fix_supercall.c.patch; do
                 if [ "$compatibility_patch" = "fix_init.c.patch" ]; then
-                  patch -p1 --forward --fuzz=3 < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
+                  patch -p1 --forward --fuzz=3 -l < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
                 else
                   patch -p1 --forward < "$KERNEL_PATCHES_FOLDER/next/susfs_fix_patches/$susfs_version/$compatibility_patch"
                 fi
