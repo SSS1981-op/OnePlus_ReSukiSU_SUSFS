@@ -43,6 +43,7 @@
       .brand { display: flex; align-items: center; gap: .7rem; font-weight: 800; text-decoration: none; }
       .mark { width: 2.25rem; height: 2.25rem; }
       .source { color: var(--muted); font-size: .9rem; }
+      .mobile-repo-links { display: none; }
       .hero {
         position: relative; overflow: hidden; isolation: isolate;
         display: grid; grid-template-columns: 1.2fr .8fr; gap: 2rem;
@@ -130,6 +131,11 @@
       footer { border-top: 1px solid var(--line); padding: 2.5rem 0 3rem; color: var(--muted); font-size: .9rem; }
       @media (max-width: 720px) {
         .topbar { align-items: start; flex-direction: column; }
+        .mobile-repo-links { display: flex; flex-wrap: wrap; gap: .6rem; margin: -.35rem 0 1.1rem; }
+        .mobile-repo-links a {
+          padding: .55rem .8rem; border: 1px solid var(--line); border-radius: 99rem;
+          color: var(--blue); background: var(--surface); font-size: .84rem; font-weight: 800; text-decoration: none;
+        }
         .hero { grid-template-columns: 1fr; padding: 2rem; }
         .hero-art { min-height: 15rem; padding-top: 1rem; }
         .channel-spotlight { top: auto; right: 0; bottom: 0; }
@@ -148,6 +154,11 @@
         </a>
         <a class="source" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">OnePlus source repository</a>
       </header>
+
+      <nav class="mobile-repo-links" aria-label="Mobile repository shortcuts">
+        <a href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases">Releases</a>
+        <a href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/actions/workflows/deploy-download-page.yml">Deployments</a>
+      </nav>
 
       <nav class="platforms" aria-label="Choose device platform">
         <button type="button" data-platform="oneplus" aria-pressed="true">OnePlus</button>
