@@ -131,10 +131,17 @@
       footer { border-top: 1px solid var(--line); padding: 2.5rem 0 3rem; color: var(--muted); font-size: .9rem; }
       @media (max-width: 720px) {
         .topbar { align-items: start; flex-direction: column; }
-        .mobile-repo-links { display: flex; flex-wrap: wrap; gap: .6rem; margin: -.35rem 0 1.1rem; }
+        .topbar .source { display: none; }
+        .mobile-repo-links {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem;
+          margin: -.35rem 0 1.1rem; padding: .85rem; border: 1px solid var(--line);
+          border-radius: var(--radius); background: oklch(0.955 0.025 225);
+        }
+        .mobile-repo-links strong { grid-column: 1 / -1; font-size: .86rem; }
         .mobile-repo-links a {
-          padding: .55rem .8rem; border: 1px solid var(--line); border-radius: 99rem;
-          color: var(--blue); background: var(--surface); font-size: .84rem; font-weight: 800; text-decoration: none;
+          display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem;
+          padding: .55rem .6rem; border: 1px solid var(--blue); border-radius: .8rem;
+          color: var(--blue); background: white; font-size: .78rem; font-weight: 800; text-align: center; text-decoration: none;
         }
         .hero { grid-template-columns: 1fr; padding: 2rem; }
         .hero-art { min-height: 15rem; padding-top: 1rem; }
@@ -156,6 +163,8 @@
       </header>
 
       <nav class="mobile-repo-links" aria-label="Mobile repository shortcuts">
+        <strong>OnePlus quick links</strong>
+        <a href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">Repository</a>
         <a href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases">Releases</a>
         <a href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/actions/workflows/deploy-download-page.yml">Deployments</a>
       </nav>
