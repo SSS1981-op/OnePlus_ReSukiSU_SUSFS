@@ -7,7 +7,8 @@
 [![SUSFS](https://img.shields.io/badge/SUSFS-Integrated-orange)](https://gitlab.com/simonpunk/susfs4ksu)
 [![OnePlusOSS Tracking Status](https://img.shields.io/badge/OnePlusOSS--Tracker-active-green)](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS/blob/status-page/README.md)
 
-[**Releases**](https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases) · [**Deployments**](https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/actions/workflows/deploy-download-page.yml)
+[![Download Releases](https://img.shields.io/badge/Download_Releases-0969da?style=for-the-badge&logo=github&logoColor=white)](https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/releases)
+[![Deployment Status](https://img.shields.io/github/actions/workflow/status/SSS1981-op/OnePlus_ReSukiSU_SUSFS/deploy-download-page.yml?branch=main&style=for-the-badge&label=Deployment%20Status&logo=githubactions&logoColor=white)](https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS/actions/workflows/deploy-download-page.yml)
 
 </div>
 
