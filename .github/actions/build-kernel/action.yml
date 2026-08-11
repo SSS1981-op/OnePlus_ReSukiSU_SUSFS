@@ -1188,7 +1188,7 @@ runs:
               # SUSFS v2.2.0 targets the pre-v3.2 KernelSU hook architecture.
               # Keep v3.2.5's modern hook and late-load implementation intact.
               awk '
-                /^diff --git a\/kernel\/(Kbuild|Kconfig|core\/init\.c|feature\/adb_root\.c|feature\/adb_root\.h|feature\/kernel_umount\.c|feature\/sucompat\.c|feature\/sucompat\.h|hook\/setuid_hook\.c|hook\/setuid_hook\.h|hook\/syscall_event_bridge\.c|include\/ksu\.h|runtime\/boot_event\.c|runtime\/ksud\.h|runtime\/ksud_integration\.c|sulog\/event\.c|sulog\/event\.h|supercall\/supercall\.c) b\// { skip = 1; next }
+                /^diff --git a\/kernel\/(Kbuild|Kconfig|core\/init\.c|feature\/adb_root\.c|feature\/adb_root\.h|feature\/kernel_umount\.c|feature\/sucompat\.c|feature\/sucompat\.h|hook\/setuid_hook\.c|hook\/setuid_hook\.h|hook\/syscall_event_bridge\.c|include\/ksu\.h|runtime\/boot_event\.c|runtime\/ksud\.h|runtime\/ksud_integration\.c|sulog\/event\.c|sulog\/event\.h|supercall\/supercall\.c|supercall\/supercall\.h) b\// { skip = 1; next }
                 /^diff --git / { skip = 0 }
                 !skip { print }
               ' "$susfs_ksu_patch" > "$filtered_susfs_patch"
@@ -1231,6 +1231,16 @@ runs:
               fi
               sed -i '/^#include <linux\/moduleparam.h>$/a #include <linux/susfs.h>' "$init_source"
               sed -i '/^    ksu_init_symbol_resolver();$/i #ifdef CONFIG_KSU_SUSFS\n    susfs_init();\n#endif' "$init_source"
+
+              dispatch_source=./kernel/supercall/dispatch.c
+              if [ "$(grep -Fxc '    if (magic2 == KSU_INSTALL_MAGIC2)' "$dispatch_source")" -ne 1 ] ||
+                 [ "$(grep -Fxc '        return ksu_supercall_reboot_handler(arg);' "$dispatch_source")" -ne 1 ]; then
+                echo "::error::Unexpected KernelSU v3.2.5 supercall dispatch layout"
+                exit 1
+              fi
+              # Keep v3.2.5's existing reboot kprobe for KSU fd installation;
+              # the SUSFS dispatch commands remain in the surrounding switch.
+              sed -i '/^    if (magic2 == KSU_INSTALL_MAGIC2)$/,+1d' "$dispatch_source"
             else
               echo "ℹ️ Skipping KernelSU folder patch for ReSukiSU"
             fi
@@ -1315,8 +1325,59 @@ runs:
         fi
         
         echo "Applying SUSFS patch..."
+        susfs_kernel_patch="$SUSFS_FOLDER/kernel_patches/50_add_susfs_in_${{ env.SUSFS_KERNEL_BRANCH }}.patch"
+        patch_to_apply="$susfs_kernel_patch"
+        filtered_kernel_patch=""
+        if [ "${{ inputs.ksu_type }}" = "KSU" ]; then
+          filtered_kernel_patch="$(mktemp)"
+          # Classic KernelSU v3.2.5 already hooks these syscalls through its
+          # syscall table. Drop only the duplicate newer-hook hunks while
+          # retaining the remaining SUSFS kernel integration.
+          awk '
+            function flush_hunk() {
+              if (hunk == "")
+                return
+              if (hunk !~ /(ksu_is_init_rc_hook_enabled|ksu_is_input_hook_enabled|ksu_handle_(execveat|faccessat|input_handle_event|stat|sys_read|vfs_fstat)|ksu_supercall_reboot_handler)/) {
+                file_body = file_body hunk
+                kept_hunk = 1
+              }
+              hunk = ""
+            }
+            function flush_file() {
+              flush_hunk()
+              if (kept_hunk)
+                printf "%s%s", file_header, file_body
+              file_header = ""
+              file_body = ""
+              kept_hunk = 0
+              in_header = 0
+            }
+            /^diff --git / {
+              flush_file()
+              file_header = $0 ORS
+              in_header = 1
+              next
+            }
+            /^@@ / {
+              flush_hunk()
+              hunk = $0 ORS
+              in_header = 0
+              next
+            }
+            {
+              if (in_header)
+                file_header = file_header $0 ORS
+              else
+                hunk = hunk $0 ORS
+            }
+            END {
+              flush_file()
+            }
+          ' "$susfs_kernel_patch" > "$filtered_kernel_patch"
+          patch_to_apply="$filtered_kernel_patch"
+        fi
         # Attempt to apply the patch; enter error handling if it doesn't apply cleanly
-        if ! patch -p1 --forward < "$SUSFS_FOLDER/kernel_patches/50_add_susfs_in_${{ env.SUSFS_KERNEL_BRANCH }}.patch"; then
+        if ! patch -p1 --forward < "$patch_to_apply"; then
           echo "Patch reported errors. Checking for known mm/memory.c Hunk #1 context mismatch..."
           
           # If mm/memory.c.rej exists and is caused by the SUSFS macro insertion failure
@@ -1337,6 +1398,9 @@ runs:
           else
             echo "Patch applied successfully with manual fallback for mm/memory.c!"
           fi
+        fi
+        if [ -n "$filtered_kernel_patch" ]; then
+          rm "$filtered_kernel_patch"
         fi
 
         # SUSFS targets the newer four-argument API, while some OnePlus 5.10
