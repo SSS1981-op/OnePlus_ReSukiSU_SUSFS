@@ -1348,6 +1348,60 @@ jobs:
           echo "--- Final Release Notes ---"
           cat release_notes.md
 
+      - name: 🔀 Reorder Release Notes (info sections before device download table)
+        run: |
+          set -euo pipefail
+          python3 - <<'PYEOF'
+          import re
+
+          with open("release_notes.md", "r", encoding="utf-8") as f:
+              content = f.read()
+
+          # The generator writes "## Built Devices" (a table where every
+          # device name is itself a direct .zip download link) immediately
+          # after the header, before any of the informational sections
+          # (Build Configuration, Features, Manager Apps, Installation,
+          # Changelog, Credits). On the actual GitHub release page this
+          # means the first thing anyone sees - including in the Telegram
+          # "DOWNLOAD RELEASE" link, which correctly opens this page - is a
+          # wall of direct-download links, with credits/about content
+          # scrolled far out of view. This step relocates the informational
+          # sections to appear first, and moves the device download table
+          # to the end, without altering how either is generated.
+          devices_heading_re = re.compile(r"^## .* Built Devices.*$", re.MULTILINE)
+          next_heading_re = re.compile(r"^## .* Build Configuration.*$", re.MULTILINE)
+
+          devices_match = devices_heading_re.search(content)
+          next_match = next_heading_re.search(content)
+
+          if not devices_match or not next_match or next_match.start() <= devices_match.start():
+              print("::warning::Could not locate expected release notes sections for reordering; leaving release_notes.md unchanged.")
+          else:
+              header = content[:devices_match.start()]
+              devices_section = content[devices_match.start():next_match.start()]
+              rest = content[next_match.start():]
+
+              # 'header' already ends with a '---' separator that used to
+              # precede the Built Devices table; that separator now
+              # correctly precedes 'rest' instead. Add a fresh separator
+              # before the relocated Built Devices section at the end.
+              reordered = (
+                  header.rstrip("\n") + "\n\n"
+                  + rest.rstrip("\n") + "\n\n---\n\n"
+                  + devices_section.rstrip("\n") + "\n"
+              )
+
+              with open("release_notes.md", "w", encoding="utf-8") as f:
+                  f.write(reordered)
+
+              print("Reordered release notes: Build Configuration, Features, Manager Apps, "
+                    "Installation, Changelog, and Credits now appear before the Built "
+                    "Devices download table.")
+          PYEOF
+
+          echo "--- Final Release Notes (reordered) ---"
+          cat release_notes.md
+
       - name: 🚀 Create GitHub Release
         run: |
           gh release create "${{ env.NEW_TAG }}" \
