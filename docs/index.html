@@ -102,6 +102,23 @@
       .asset b { font-size: 1.02rem; }
       .asset span { color: var(--muted); font-family: ui-monospace, "Cascadia Code", monospace; font-size: .77rem; overflow-wrap: anywhere; }
       .download { color: var(--blue); font-weight: 800; font-size: .9rem; }
+      .download-reminder {
+        width: min(31rem, calc(100% - 2rem)); padding: 0; border: 1px solid var(--line);
+        border-radius: var(--radius); color: var(--ink); background: var(--paper);
+        box-shadow: 0 1.5rem 4rem oklch(0.18 0.04 250 / .3);
+      }
+      .download-reminder::backdrop { background: oklch(0.18 0.025 264 / .55); backdrop-filter: blur(3px); }
+      .download-reminder form { display: grid; gap: 1rem; padding: 1.5rem; }
+      .download-reminder h2 { font-size: 2rem; }
+      .download-reminder p { margin: 0; color: var(--muted); line-height: 1.55; }
+      .download-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: .25rem; }
+      .download-action {
+        display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem;
+        padding: .65rem 1rem; border: 1px solid var(--blue); border-radius: 99rem;
+        color: white; background: var(--blue); font-weight: 800; text-decoration: none;
+      }
+      .download-action.secondary { color: var(--blue); background: transparent; }
+      .download-cancel { margin-left: auto; }
       footer { border-top: 1px solid var(--line); padding: 2.5rem 0 3rem; color: var(--muted); font-size: .9rem; }
       @media (max-width: 720px) {
         .topbar { align-items: start; flex-direction: column; }
@@ -179,14 +196,31 @@
     </main>
     <footer><div class="wrap">Built from the published NoMount release. Kernel modifications carry risk; keep a known-good boot image and recovery path before flashing.</div></footer>
 
+    <dialog class="download-reminder" id="download-reminder" aria-labelledby="download-reminder-title" aria-describedby="download-reminder-copy">
+      <form method="dialog">
+        <div class="eyebrow">Before you download</div>
+        <h2 id="download-reminder-title">Stay connected with RealS3S Kernel Lab</h2>
+        <p id="download-reminder-copy">Please consider joining the Telegram channel for release news and support. This static page cannot verify channel membership, so you may continue directly to the GitHub download.</p>
+        <div class="download-actions">
+          <a class="download-action secondary" href="https://t.me/RealS3SKernelLab" target="_blank" rel="noopener noreferrer">Join Channel</a>
+          <a class="download-action" id="continue-download" href="#">Continue to Download</a>
+          <button class="download-cancel" type="submit" value="cancel">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
     <script>
       const repository = "SSS1981-op/OnePlus_ReSukiSU_SUSFS";
       const status = document.querySelector("#status");
       const groups = document.querySelector("#groups");
       const count = document.querySelector("#package-count");
+      const channelUrl = document.querySelector(".channel-spotlight")?.href;
+      const downloadReminder = document.querySelector("#download-reminder");
+      const continueDownload = document.querySelector("#continue-download");
       let catalogAssets = [];
       let filter = "all";
       let rootFilter = "all";
+      let requestedDownload = null;
       const rootLabels = {
         KSUN: "KernelSU Next",
         ReSukiSU: "ReSukiSU",
@@ -253,6 +287,7 @@
             const link = document.createElement("a");
             link.className = "asset";
             link.href = asset.browser_download_url;
+            link.dataset.download = "";
             const variant = asset.name.includes("spoofed") ? "Spoofed manager" : "Manager";
             link.innerHTML = `<b>${rootLabels[asset.root]} ${variant}</b><span>${asset.name}</span><span class="download">Download APK &rarr;</span>`;
             grid.append(link);
@@ -261,6 +296,7 @@
             const link = document.createElement("a");
             link.className = "asset";
             link.href = asset.browser_download_url;
+            link.dataset.download = "";
             link.innerHTML = `<b>${asset.model}</b><span>${asset.oos.replace("OOS", "OxygenOS ")} · ${asset.kernel}</span><span>${rootLabels[asset.root]} + SUSFS ${asset.susfs}</span><span class="download">Download ZIP &rarr;</span>`;
             grid.append(link);
           });
@@ -296,7 +332,10 @@
             const asset = byName.get(tool.name);
             const card = document.createElement(asset ? "a" : "div");
             card.className = "tool-card";
-            if (asset) card.href = asset.browser_download_url;
+            if (asset) {
+              card.href = asset.browser_download_url;
+              card.dataset.download = "";
+            }
             card.innerHTML = `<b>${tool.title}</b><small>${tool.description}</small><span class="download">${asset ? "Download &rarr;" : "Publishing soon"}</span>`;
             return card;
           }));
@@ -310,6 +349,21 @@
           status.textContent = `${error.message}. Refresh this page after publication completes.`;
           count.textContent = "Publication in progress";
         });
+
+      document.addEventListener("click", event => {
+        const link = event.target.closest("a[data-download]");
+        if (!link || event.defaultPrevented || event.button !== 0 || !channelUrl || !downloadReminder.showModal) return;
+        event.preventDefault();
+        requestedDownload = link;
+        continueDownload.href = link.href;
+        downloadReminder.showModal();
+      });
+      continueDownload.addEventListener("click", () => downloadReminder.close());
+      downloadReminder.addEventListener("close", () => {
+        continueDownload.href = "#";
+        requestedDownload?.focus();
+        requestedDownload = null;
+      });
     </script>
   </body>
 </html>
