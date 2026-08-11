@@ -1188,7 +1188,7 @@ runs:
               # SUSFS v2.2.0 targets the pre-v3.2 KernelSU hook architecture.
               # Keep v3.2.5's modern hook and late-load implementation intact.
               awk '
-                /^diff --git a\/kernel\/(Kbuild|Kconfig|core\/init\.c|feature\/kernel_umount\.c|feature\/sucompat\.c|feature\/sucompat\.h|hook\/setuid_hook\.c|sulog\/event\.c|sulog\/event\.h|supercall\/supercall\.c) b\// { skip = 1; next }
+                /^diff --git a\/kernel\/(Kbuild|Kconfig|core\/init\.c|feature\/adb_root\.c|feature\/adb_root\.h|feature\/kernel_umount\.c|feature\/sucompat\.c|feature\/sucompat\.h|hook\/setuid_hook\.c|hook\/setuid_hook\.h|hook\/syscall_event_bridge\.c|include\/ksu\.h|runtime\/boot_event\.c|runtime\/ksud\.h|runtime\/ksud_integration\.c|sulog\/event\.c|sulog\/event\.h|supercall\/supercall\.c) b\// { skip = 1; next }
                 /^diff --git / { skip = 0 }
                 !skip { print }
               ' "$susfs_ksu_patch" > "$filtered_susfs_patch"
