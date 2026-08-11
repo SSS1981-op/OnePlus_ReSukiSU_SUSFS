@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Download compatible OnePlus ReSukiSU, SUSFS, and NoMount kernel packages."
+      content="Browse compatible OnePlus and Google Pixel kernel packages from RealS3S Kernel Lab."
     />
-    <title>RealS3S Kernel Lab | OnePlus ReSukiSU + NoMount</title>
+    <title>RealS3S Kernel Lab | Device Kernel Packages</title>
     <style>
       :root {
         --ink: oklch(0.18 0.025 264);
@@ -81,6 +81,8 @@
       }
       .stats { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.8rem; }
       .stat { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 99rem; background: oklch(1 0 0 / .7); font-weight: 700; font-size: .9rem; }
+      .platforms { display: flex; flex-wrap: wrap; gap: .65rem; margin: 0 0 1rem; }
+      .platforms button { min-width: 9rem; padding: .75rem 1.1rem; }
       .notice { margin: 2rem 0; padding: 1rem 1.2rem; border-left: .35rem solid var(--blue); border-radius: .4rem; background: oklch(0.93 0.045 230); color: oklch(0.31 0.06 250); }
       .tools { margin: 2rem 0 3.5rem; }
       .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem; margin-top: 1rem; }
@@ -101,7 +103,13 @@
       .asset:hover, .asset:focus-visible { transform: translateY(-3px); border-color: var(--blue); outline: none; }
       .asset b { font-size: 1.02rem; }
       .asset span { color: var(--muted); font-family: ui-monospace, "Cascadia Code", monospace; font-size: .77rem; overflow-wrap: anywhere; }
+      .tool-card.highlighted-download,
+      .asset.highlighted-download {
+        border-color: #a8d5f7;
+        background-color: #e4f2ff;
+      }
       .download { color: var(--blue); font-weight: 800; font-size: .9rem; }
+      .coming-soon { color: var(--muted); }
       .download-reminder {
         width: min(31rem, calc(100% - 2rem)); padding: 0; border: 1px solid var(--line);
         border-radius: var(--radius); color: var(--ink); background: var(--paper);
@@ -138,18 +146,23 @@
           <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path fill="var(--blue)" d="M24 2 43 13v22L24 46 5 35V13z"/><path fill="white" d="M14 16h20v5H14zm0 11h13v5H14z"/></svg>
           RealS3S Kernel Lab
         </a>
-        <a class="source" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">Source repository</a>
+        <a class="source" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">OnePlus source repository</a>
       </header>
+
+      <nav class="platforms" aria-label="Choose device platform">
+        <button type="button" data-platform="oneplus" aria-pressed="true">OnePlus</button>
+        <button type="button" data-platform="pixel" aria-pressed="false">Google Pixel</button>
+      </nav>
 
       <section class="hero" aria-labelledby="page-title">
         <div>
-          <div class="eyebrow">OnePlus kernel packages</div>
+          <div class="eyebrow" id="platform-label">OnePlus kernel packages</div>
           <h1 id="page-title">Pick the kernel built for your device.</h1>
-          <p class="lede">Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
+          <p class="lede" id="platform-description">Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
           <div class="stats">
             <span class="stat" id="package-count">Loading packages</span>
-            <span class="stat">NoMount dev integrated</span>
-            <span class="stat">Device-specific only</span>
+            <span class="stat" id="feature-status">NoMount dev integrated</span>
+            <span class="stat" id="compatibility-status">Device-specific only</span>
           </div>
         </div>
         <div class="hero-art">
@@ -166,32 +179,65 @@
         </div>
       </section>
 
-      <aside class="notice"><strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Always match the model, OxygenOS generation, and kernel version shown on the card.</aside>
+      <aside class="notice" id="compatibility-notice"><strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Always match the model, OxygenOS generation, and kernel version shown on the card.</aside>
 
-      <section class="tools" aria-labelledby="tools-title">
-        <div class="eyebrow">Companion downloads</div>
-        <h2 id="tools-title">Set up NoMount</h2>
-        <div class="tool-grid" id="tools"></div>
-      </section>
+      <div id="oneplus-content">
+        <section class="tools" aria-labelledby="tools-title">
+          <div class="eyebrow">Companion downloads</div>
+          <h2 id="tools-title">Set up NoMount</h2>
+          <div class="tool-grid" id="tools"></div>
+        </section>
 
-      <section aria-labelledby="catalog-title">
+        <section aria-labelledby="catalog-title">
+          <div class="catalog-head">
+            <div><div class="eyebrow">Available release assets</div><h2 id="catalog-title">Download catalog</h2></div>
+            <div class="filters" aria-label="Filter package generation">
+              <button type="button" data-filter="all" aria-pressed="true">All</button>
+              <button type="button" data-filter="OOS14" aria-pressed="false">OOS 14</button>
+              <button type="button" data-filter="OOS15" aria-pressed="false">OOS 15</button>
+              <button type="button" data-filter="OOS16" aria-pressed="false">OOS 16</button>
+            </div>
+            <div class="filters" aria-label="Filter root implementation">
+              <button type="button" data-root="all" aria-pressed="true">All roots</button>
+              <button type="button" data-root="KSUN" aria-pressed="false">KernelSU Next</button>
+              <button type="button" data-root="ReSukiSU" aria-pressed="false">ReSukiSU</button>
+              <button type="button" data-root="KSU" aria-pressed="false">KernelSU</button>
+            </div>
+          </div>
+          <p class="status" id="status" role="status">Loading published packages...</p>
+          <div class="groups" id="groups"></div>
+        </section>
+      </div>
+
+      <section id="pixel-content" aria-labelledby="pixel-catalog-title" hidden>
         <div class="catalog-head">
-          <div><div class="eyebrow">Available release assets</div><h2 id="catalog-title">Download catalog</h2></div>
-          <div class="filters" aria-label="Filter package generation">
-            <button type="button" data-filter="all" aria-pressed="true">All</button>
-            <button type="button" data-filter="OOS14" aria-pressed="false">OOS 14</button>
-            <button type="button" data-filter="OOS15" aria-pressed="false">OOS 15</button>
-            <button type="button" data-filter="OOS16" aria-pressed="false">OOS 16</button>
-          </div>
-          <div class="filters" aria-label="Filter root implementation">
-            <button type="button" data-root="all" aria-pressed="true">All roots</button>
-            <button type="button" data-root="KSUN" aria-pressed="false">KernelSU Next</button>
-            <button type="button" data-root="ReSukiSU" aria-pressed="false">ReSukiSU</button>
-            <button type="button" data-root="KSU" aria-pressed="false">KernelSU</button>
-          </div>
+          <div><div class="eyebrow">Google Pixel preview</div><h2 id="pixel-catalog-title">Pixel device catalog</h2></div>
         </div>
-        <p class="status" id="status" role="status">Loading published packages...</p>
-        <div class="groups" id="groups"></div>
+        <p class="status" role="status">Stock Pixel 6/6 Pro source builds are validated. Root-enabled packages remain private until every supported variant passes validation.</p>
+        <div class="groups">
+          <section class="group">
+            <div class="group-title"><span>Google Pixel 6 · oriole</span><span>Coming soon</span></div>
+            <div class="assets">
+              <div class="asset">
+                <b>Pixel 6</b>
+                <span>Shared raviole Android 16 / kernel 6.1 source baseline</span>
+                <span>KernelSU Next · ReSukiSU · KernelSU planned</span>
+                <span class="download coming-soon">Downloads unlock after validation</span>
+              </div>
+            </div>
+          </section>
+          <section class="group">
+            <div class="group-title"><span>Google Pixel 6 Pro · raven</span><span>Coming soon</span></div>
+            <div class="assets">
+              <div class="asset">
+                <b>Pixel 6 Pro</b>
+                <span>Shared raviole Android 16 / kernel 6.1 source baseline</span>
+                <span>KernelSU Next · ReSukiSU · KernelSU planned</span>
+                <span class="download coming-soon">Downloads unlock after validation</span>
+              </div>
+            </div>
+          </section>
+        </div>
       </section>
     </main>
     <footer><div class="wrap">Built from the published NoMount release. Kernel modifications carry risk; keep a known-good boot image and recovery path before flashing.</div></footer>
@@ -217,10 +263,19 @@
       const channelUrl = document.querySelector(".channel-spotlight")?.href;
       const downloadReminder = document.querySelector("#download-reminder");
       const continueDownload = document.querySelector("#continue-download");
+      const onePlusContent = document.querySelector("#oneplus-content");
+      const pixelContent = document.querySelector("#pixel-content");
+      const platformLabel = document.querySelector("#platform-label");
+      const platformDescription = document.querySelector("#platform-description");
+      const featureStatus = document.querySelector("#feature-status");
+      const compatibilityStatus = document.querySelector("#compatibility-status");
+      const compatibilityNotice = document.querySelector("#compatibility-notice");
       let catalogAssets = [];
       let filter = "all";
       let rootFilter = "all";
       let requestedDownload = null;
+      let selectedPlatform = "oneplus";
+      let onePlusPackageCount = "Loading packages";
       const rootLabels = {
         KSUN: "KernelSU Next",
         ReSukiSU: "ReSukiSU",
@@ -233,6 +288,28 @@
           description: "Flash from a compatible root manager. Built from the exact NoMount dev commit integrated in these kernels."
         }
       ];
+
+      function renderPlatform() {
+        const isPixel = selectedPlatform === "pixel";
+        onePlusContent.hidden = isPixel;
+        pixelContent.hidden = !isPixel;
+        platformLabel.textContent = isPixel ? "Google Pixel kernel packages" : "OnePlus kernel packages";
+        platformDescription.textContent = isPixel
+          ? "Pixel 6 and Pixel 6 Pro share the official raviole source baseline. Downloads remain unavailable until each root variant and its device-specific packaging pass validation."
+          : "Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.";
+        count.textContent = isPixel ? "Pixel 6 + Pixel 6 Pro" : onePlusPackageCount;
+        featureStatus.textContent = isPixel ? "Root validation in progress" : "NoMount dev integrated";
+        compatibilityStatus.textContent = isPixel ? "No public downloads yet" : "Device-specific only";
+        compatibilityNotice.innerHTML = isPixel
+          ? "<strong>Validation first:</strong> The current Pixel artifacts prove that the official source compiles, but they are not public flash packages or hardware-boot-tested builds."
+          : "<strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Always match the model, OxygenOS generation, and kernel version shown on the card.";
+      }
+
+      document.querySelectorAll("[data-platform]").forEach(button => button.addEventListener("click", () => {
+        selectedPlatform = button.dataset.platform;
+        document.querySelectorAll("[data-platform]").forEach(item => item.setAttribute("aria-pressed", item === button));
+        renderPlatform();
+      }));
 
       function parseKernelAsset(asset) {
         const match = asset.name.match(/^AK3_(.+)_(OOS(?:14|15|16))_(android\d+-[\d.]+)_(KSUN|ReSukiSU|KSU)_(\d+)_SuSFS_(.+)\.zip$/);
@@ -285,7 +362,7 @@
           grid.className = "assets";
           managers.sort((a, b) => a.name.localeCompare(b.name)).forEach(asset => {
             const link = document.createElement("a");
-            link.className = "asset";
+            link.className = "asset highlighted-download";
             link.href = asset.browser_download_url;
             link.dataset.download = "";
             const variant = asset.name.includes("spoofed") ? "Spoofed manager" : "Manager";
@@ -331,7 +408,7 @@
           tools.replaceChildren(...companionAssets.map(tool => {
             const asset = byName.get(tool.name);
             const card = document.createElement(asset ? "a" : "div");
-            card.className = "tool-card";
+            card.className = "tool-card highlighted-download";
             if (asset) {
               card.href = asset.browser_download_url;
               card.dataset.download = "";
@@ -342,12 +419,14 @@
           const kernels = catalogAssets.filter(asset => asset.type === "kernel");
           const managers = catalogAssets.filter(asset => asset.type === "manager");
           const releaseCount = new Set(kernels.map(item => item.release.id)).size;
-          count.textContent = `${kernels.length} kernels and ${managers.length} managers from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
+          onePlusPackageCount = `${kernels.length} kernels and ${managers.length} managers from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
+          renderPlatform();
           render();
         })
         .catch(error => {
           status.textContent = `${error.message}. Refresh this page after publication completes.`;
-          count.textContent = "Publication in progress";
+          onePlusPackageCount = "Publication in progress";
+          renderPlatform();
         });
 
       document.addEventListener("click", event => {
