@@ -288,7 +288,7 @@
           section.className = "group";
           const managerCount = `${managers.length} manager${managers.length === 1 ? "" : "s"}`;
           const kernelCount = `${kernels.length} kernel${kernels.length === 1 ? "" : "s"}`;
-          section.innerHTML = `<div class="group-title"><span>${rootLabels[root]} · ${release.name}</span><span>${managerCount} · ${kernelCount}</span></div>`;
+          section.innerHTML = `<div class="group-title"><span>${rootLabels[root]} · ${release.name}</span><span>${managerCount} · ${kernelCount}</span><a class="download" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">Download release</a></div>`;
           const grid = document.createElement("div");
           grid.className = "assets";
           managers.sort((a, b) => a.name.localeCompare(b.name)).forEach(asset => {
