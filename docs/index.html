@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Browse compatible OnePlus and Google Pixel kernel packages from RealS3S Kernel Lab."
+      content="Browse compatible OnePlus kernel packages from RealS3S Kernel Lab."
     />
     <title>RealS3S Kernel Lab | Device Kernel Packages</title>
     <style>
@@ -81,8 +81,6 @@
       }
       .stats { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.8rem; }
       .stat { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 99rem; background: oklch(1 0 0 / .7); font-weight: 700; font-size: .9rem; }
-      .platforms { display: flex; flex-wrap: wrap; gap: .65rem; margin: 0 0 1rem; }
-      .platforms button { min-width: 9rem; padding: .75rem 1.1rem; }
       .notice { margin: 2rem 0; padding: 1rem 1.2rem; border-left: .35rem solid var(--blue); border-radius: .4rem; background: oklch(0.93 0.045 230); color: oklch(0.31 0.06 250); }
       .tools { margin: 2rem 0 3.5rem; }
       .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem; margin-top: 1rem; }
@@ -149,21 +147,15 @@
         <a class="source" href="https://github.com/SSS1981-op/OnePlus_ReSukiSU_SUSFS">OnePlus source repository</a>
       </header>
 
-      <nav class="platforms" aria-label="Choose device platform">
-        <button type="button" data-platform="oneplus" aria-pressed="true">OnePlus</button>
-        <button type="button" data-platform="pixel" aria-pressed="false">Google Pixel</button>
-        <button type="button" data-platform="gki" aria-pressed="false">Generic GKI evidence</button>
-      </nav>
-
       <section class="hero" aria-labelledby="page-title">
         <div>
-          <div class="eyebrow" id="platform-label">OnePlus kernel packages</div>
+          <div class="eyebrow">OnePlus kernel packages</div>
           <h1 id="page-title">Pick the kernel built for your device.</h1>
-          <p class="lede" id="platform-description">Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
+          <p class="lede">Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.</p>
           <div class="stats">
             <span class="stat" id="package-count">Loading packages</span>
-            <span class="stat" id="feature-status">NoMount dev integrated</span>
-            <span class="stat" id="compatibility-status">Device-specific only</span>
+            <span class="stat">NoMount dev integrated</span>
+            <span class="stat">Device-specific only</span>
           </div>
         </div>
         <div class="hero-art">
@@ -209,60 +201,6 @@
           <div class="groups" id="groups"></div>
         </section>
       </div>
-
-      <section id="pixel-content" aria-labelledby="pixel-catalog-title" hidden>
-        <div class="catalog-head">
-          <div><div class="eyebrow">Google Pixel preview</div><h2 id="pixel-catalog-title">Pixel device catalog</h2></div>
-        </div>
-        <p class="status" role="status">Stock Pixel 6/6 Pro source builds are validated. Root-enabled packages remain private until every supported variant passes validation.</p>
-        <div class="groups">
-          <section class="group">
-            <div class="group-title"><span>Google Pixel 6 · oriole</span><span>Coming soon</span></div>
-            <div class="assets">
-              <div class="asset">
-                <b>Pixel 6</b>
-                <span>Shared raviole Android 16 / kernel 6.1 source baseline</span>
-                <span>KernelSU Next · ReSukiSU · KernelSU planned</span>
-                <span class="download coming-soon">Downloads unlock after validation</span>
-              </div>
-            </div>
-          </section>
-          <section class="group">
-            <div class="group-title"><span>Google Pixel 6 Pro · raven</span><span>Coming soon</span></div>
-            <div class="assets">
-              <div class="asset">
-                <b>Pixel 6 Pro</b>
-                <span>Shared raviole Android 16 / kernel 6.1 source baseline</span>
-                <span>KernelSU Next · ReSukiSU · KernelSU planned</span>
-                <span class="download coming-soon">Downloads unlock after validation</span>
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <section id="gki-content" aria-labelledby="gki-evidence-title" hidden>
-        <div class="catalog-head">
-          <div><div class="eyebrow">Verified build provenance</div><h2 id="gki-evidence-title">Generic GKI compile evidence</h2></div>
-        </div>
-        <p class="status" role="status">Verified Android 14/6.1 Generic GKI compile evidence only.</p>
-        <div class="groups">
-          <section class="group">
-            <div class="group-title"><span>Android 14 · common-android14-6.1</span><span>Compile evidence only</span></div>
-            <div class="assets">
-              <div class="asset">
-                <b>Verified Android 14/6.1 Generic GKI COMPILE EVIDENCE ONLY</b>
-                <span>Build target · //common:kernel_aarch64_dist</span>
-                <span>Source revision · c84566329259ce25de7ef4b7bd3b55d570511af3</span>
-                <span>Built Image SHA-256 · 91a5796e533f92e5bee4af5592729941ef9237cfbcff7733b446e989f4544343</span>
-                <span>Evidence archive SHA-256 · e0c2afdb0a37813dd7352e0eb4a80a10c1e6d6f70c39884b7e1b5dbb959daf6f</span>
-                <span class="coming-soon">Not a device release, universal image, root-manager build, flash package, compatibility or flashability claim, or Telegram announcement. No KernelSU, KernelSU Next, or ReSukiSU build is published here.</span>
-                <span class="download"><a href="https://github.com/SSS1981-op/Android_GKI_KernelSU_SUSFS_NoMount/releases/tag/android14-6.1-gki-compile-evidence-c845663">View evidence release</a> · <a href="https://github.com/SSS1981-op/Android_GKI_KernelSU_SUSFS_NoMount/releases/download/android14-6.1-gki-compile-evidence-c845663/android14-6.1-gki-compile-evidence-c845663.zip">Download evidence archive</a> · <a href="https://github.com/SSS1981-op/Android_GKI_KernelSU_SUSFS_NoMount/actions/runs/31822863272">View build provenance</a></span>
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
     </main>
     <footer><div class="wrap">Built from the published NoMount release. Kernel modifications carry risk; keep a known-good boot image and recovery path before flashing.</div></footer>
 
@@ -287,20 +225,10 @@
       const channelUrl = document.querySelector(".channel-spotlight")?.href;
       const downloadReminder = document.querySelector("#download-reminder");
       const continueDownload = document.querySelector("#continue-download");
-      const onePlusContent = document.querySelector("#oneplus-content");
-      const pixelContent = document.querySelector("#pixel-content");
-      const gkiContent = document.querySelector("#gki-content");
-      const platformLabel = document.querySelector("#platform-label");
-      const platformDescription = document.querySelector("#platform-description");
-      const featureStatus = document.querySelector("#feature-status");
-      const compatibilityStatus = document.querySelector("#compatibility-status");
-      const compatibilityNotice = document.querySelector("#compatibility-notice");
       let catalogAssets = [];
       let filter = "all";
       let rootFilter = "all";
       let requestedDownload = null;
-      let selectedPlatform = "oneplus";
-      let onePlusPackageCount = "Loading packages";
       const rootLabels = {
         KSUN: "KernelSU Next",
         ReSukiSU: "ReSukiSU",
@@ -313,34 +241,6 @@
           description: "Flash from a compatible root manager. Built from the exact NoMount dev commit integrated in these kernels."
         }
       ];
-
-      function renderPlatform() {
-        const isPixel = selectedPlatform === "pixel";
-        const isGki = selectedPlatform === "gki";
-        onePlusContent.hidden = isPixel || isGki;
-        pixelContent.hidden = !isPixel;
-        gkiContent.hidden = !isGki;
-        platformLabel.textContent = isGki ? "Generic GKI build evidence" : isPixel ? "Google Pixel kernel packages" : "OnePlus kernel packages";
-        platformDescription.textContent = isPixel
-          ? "Pixel 6 and Pixel 6 Pro share the official raviole source baseline. Downloads remain unavailable until each root variant and its device-specific packaging pass validation."
-          : isGki
-            ? "Verified Android 14/6.1 Generic GKI compile evidence. It does not publish a device image, root-manager build, or flash package."
-            : "Published KernelSU Next, ReSukiSU, and KernelSU + SUSFS + NoMount packages. Select an asset that matches your exact OnePlus model, OxygenOS generation, and kernel version.";
-        count.textContent = isGki ? "Evidence-only release" : isPixel ? "Pixel 6 + Pixel 6 Pro" : onePlusPackageCount;
-        featureStatus.textContent = isGki ? "Build provenance verified" : isPixel ? "Root validation in progress" : "NoMount dev integrated";
-        compatibilityStatus.textContent = isGki ? "No compatibility or flashability claim" : isPixel ? "No public downloads yet" : "Device-specific only";
-        compatibilityNotice.innerHTML = isPixel
-          ? "<strong>Validation first:</strong> The current Pixel artifacts prove that the official source compiles, but they are not public flash packages or hardware-boot-tested builds."
-          : isGki
-            ? "<strong>Evidence only:</strong> This Generic GKI result is not a device release, universal image, flash package, root-manager build, or compatibility or flashability claim."
-            : "<strong>Compatibility first:</strong> Do not flash a package for another OnePlus model or OOS build. Always match the model, OxygenOS generation, and kernel version shown on the card.";
-      }
-
-      document.querySelectorAll("[data-platform]").forEach(button => button.addEventListener("click", () => {
-        selectedPlatform = button.dataset.platform;
-        document.querySelectorAll("[data-platform]").forEach(item => item.setAttribute("aria-pressed", item === button));
-        renderPlatform();
-      }));
 
       function parseKernelAsset(asset) {
         const match = asset.name.match(/^AK3_(.+)_(OOS(?:14|15|16))_(android\d+-[\d.]+)_(KSUN|ReSukiSU|KSU)_(\d+)_SuSFS_(.+)\.zip$/);
@@ -450,14 +350,12 @@
           const kernels = catalogAssets.filter(asset => asset.type === "kernel");
           const managers = catalogAssets.filter(asset => asset.type === "manager");
           const releaseCount = new Set(kernels.map(item => item.release.id)).size;
-          onePlusPackageCount = `${kernels.length} kernels and ${managers.length} managers from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
-          renderPlatform();
+          count.textContent = `${kernels.length} kernels and ${managers.length} managers from ${releaseCount} published release${releaseCount === 1 ? "" : "s"}`;
           render();
         })
         .catch(error => {
           status.textContent = `${error.message}. Refresh this page after publication completes.`;
-          onePlusPackageCount = "Publication in progress";
-          renderPlatform();
+          count.textContent = "Publication in progress";
         });
 
       document.addEventListener("click", event => {
